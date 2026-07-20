@@ -59,7 +59,9 @@ The site is live. On it there is no backend, so tools marked **“In your
 browser”** run entirely on your device via pdf-lib: Merge, Split, Rotate, Organize,
 JPG→PDF, Crop, Page Numbers, and text Watermark. Files never leave your
 machine for those tools. Backend-dependent tools (compression, office
-conversion, OCR, etc.) show a notice pointing to the Docker setup below.
+conversion, OCR, etc.) show a notice pointing to the Docker setup below —
+see `DEPLOY.md` to host the backend too and light up all 24 tools on the
+live site.
 
 ## Docker Compose
 
