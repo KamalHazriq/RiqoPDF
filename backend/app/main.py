@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .routers import (
     compress,
     convert,
+    forms,
     jpg_to_pdf,
     merge,
     organize,
@@ -15,8 +16,11 @@ from .routers import (
     pdf_to_markdown,
     pdf_to_powerpoint,
     pdf_to_word,
+    redact,
     rotate,
+    sign,
     split,
+    watermark,
 )
 from .storage import sweeper_loop
 
@@ -49,6 +53,10 @@ app.include_router(pdf_to_markdown.router, prefix="/api/tools", tags=["pdf-to-ma
 app.include_router(pdf_to_word.router, prefix="/api/tools", tags=["pdf-to-word"])
 app.include_router(pdf_to_excel.router, prefix="/api/tools", tags=["pdf-to-excel"])
 app.include_router(pdf_to_powerpoint.router, prefix="/api/tools", tags=["pdf-to-powerpoint"])
+app.include_router(watermark.router, prefix="/api/tools", tags=["watermark"])
+app.include_router(redact.router, prefix="/api/tools", tags=["redact"])
+app.include_router(sign.router, prefix="/api/tools", tags=["sign"])
+app.include_router(forms.router, prefix="/api/tools", tags=["forms"])
 
 
 @app.get("/api/health")

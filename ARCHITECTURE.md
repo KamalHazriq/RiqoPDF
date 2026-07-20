@@ -104,7 +104,11 @@ RiqoPDF/
     │       ├── pdf_to_word.py       # pdf -> docx (PyMuPDF + python-docx)
     │       ├── pdf_to_excel.py      # pdf -> xlsx (PyMuPDF + openpyxl)
     │       ├── pdf_to_powerpoint.py # pdf -> pptx (PyMuPDF + python-pptx)
-    │       └── pdf_to_markdown.py
+    │       ├── pdf_to_markdown.py
+    │       ├── watermark.py         # text/image watermark, tiled or anchored
+    │       ├── redact.py            # true text removal (PyMuPDF redaction annots)
+    │       ├── sign.py              # place a signature image on a page
+    │       └── forms.py             # fillable text/checkbox widgets
     ├── office.py                    # shared LibreOffice headless helper
     ├── requirements.txt
     └── Dockerfile
@@ -136,8 +140,15 @@ PyMuPDF-extracted text/tables/page-images.
   PDF and PDF → HTML via LibreOffice headless; PDF → Word/Excel/PowerPoint
   and PDF → Markdown via PyMuPDF-based reconstruction (see dependency notes
   above for why these don't share one code path).
-- **Phase 3:** Editing tools (watermark, sign, redact, forms) — needs a
-  canvas-based editor in the frontend.
+- **Phase 3 (done):** Watermark (text/image, tiled or anchored), Sign PDF
+  (draw-on-canvas or upload a signature image), Redact PDF (true removal via
+  PyMuPDF redaction annotations, not just a black box overlay), PDF Forms
+  (text/checkbox widgets placed by percentage coordinates). No visual PDF
+  page canvas was built — placement stays numeric/percentage-based to match
+  the rest of the app's pattern (e.g. page-range specs on Split/Rotate);
+  a full drag-and-drop canvas editor (for the general "Edit PDF" tool with
+  freeform text/shapes/highlights) is still open and would be the next
+  Phase 3 increment if pursued.
 - **Phase 4:** AI features (OCR, summarizer, translate, chat-with-PDF) —
   first phase that plausibly needs a database (auth, usage limits, job
   history) and external LLM/OCR calls.

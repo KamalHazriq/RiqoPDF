@@ -8,6 +8,7 @@ system design. This repo currently implements:
   JPG→PDF, and PDF→JPG.
 - **Phase 2:** Word/Excel/PowerPoint→PDF, PDF→Word/Excel/PowerPoint,
   PDF→HTML, PDF→Markdown.
+- **Phase 3:** Watermark, Sign PDF, Redact PDF, PDF Forms.
 
 No database, no accounts — every request is upload → process → download,
 with uploaded files deleted immediately after processing (and swept after
@@ -53,5 +54,6 @@ Frontend on http://localhost:3000, backend on http://localhost:8000.
 
 ## Roadmap
 
-See "Development Roadmap" in `ARCHITECTURE.md` for Phases 2–4 (office
-conversion, editing tools, AI features).
+See "Development Roadmap" in `ARCHITECTURE.md` for Phase 4 (AI features —
+OCR, summarizer, translate, chat-with-PDF) and the still-open general
+"Edit PDF" canvas editor.
