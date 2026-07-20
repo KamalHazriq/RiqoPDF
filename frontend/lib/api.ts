@@ -21,7 +21,7 @@ export async function callTool(path: string, formData: FormData): Promise<Respon
     });
   } catch {
     throw new ApiError(
-      "This tool needs the RiqoPDF backend server, which isn't reachable from this deployment. Run the app locally with Docker Compose to use it.",
+      "This tool needs the RiqoPDF backend server, which isn't available on this site. Tools marked “In your browser” (Merge, Split, Rotate, Organize, Crop, Page Numbers, JPG to PDF, text Watermark) work right here with no server — for everything else, run the app locally with Docker Compose.",
     );
   }
 
