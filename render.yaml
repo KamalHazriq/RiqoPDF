@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: riqopdf-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: CORS_ORIGINS
+        value: https://kamalhazriq.github.io

@@ -60,9 +60,9 @@ pick up next. Newest session first.
   the watermark UI constrains rotation accordingly.
 
 ### Technical debt
-1. **CORS origin hardcoded** to `http://localhost:3000` in
-   `backend/app/main.py` — must become an env var before the backend is
-   deployed anywhere real.
+1. ~~CORS origin hardcoded~~ **Fixed same session**: `CORS_ORIGINS` env var
+   (comma-separated) in `backend/app/config.py`, defaults to
+   `http://localhost:3000` for local dev.
 2. **No rate limiting / abuse protection** on the backend (100 MB upload
    cap exists, nothing else).
 3. **No automated test suite.** Everything was verified by curl +
@@ -85,13 +85,23 @@ pick up next. Newest session first.
 - Phase 4: OCR (Tesseract: eng/msa/chi/jpn per spec), AI summarizer/
   translate/chat — needs an LLM key and is the natural point to introduce
   a database + auth.
-- Deploy the backend (Render/Railway free tier) and set
-  `NEXT_PUBLIC_API_BASE` in the Pages workflow so the live site gets all
-  24 tools, not just the browser 8.
+- ~~Deploy the backend~~ **Prepped same session, not completed** — see below.
+
+### Backend deploy: prepped, blocked on account access
+Everything code-side is ready for a one-click backend deploy
+(`DEPLOY.md`, `render.yaml`, `railway.json`, env-configurable CORS,
+`$PORT` support in `backend/Dockerfile`, and a `NEXT_PUBLIC_API_BASE`
+repo variable already wired into `deploy-pages.yml`). What's *not* done:
+actually creating a Render or Railway account and clicking deploy — that
+requires the repo owner's credentials, which the agent doesn't have and
+can't create. No Render/Railway MCP connector was available in this
+session either.
 
 ### Tomorrow's first task
-**Deploy the backend to Render (or Railway) and wire the live site to it.**
-Concretely: make the CORS origin env-configurable (debt #1), point
-`NEXT_PUBLIC_API_BASE` at the deployed URL in `deploy-pages.yml`, push, and
-verify a backend tool (Compress) works on the live site. This turns the
-static demo into the full product with the least new code.
+**Follow `DEPLOY.md`**: create a Render (or Railway) account, connect the
+repo, deploy `riqopdf-backend` (~5 min, mostly LibreOffice install time),
+then set the `NEXT_PUBLIC_API_BASE` repository variable (Settings → Secrets
+and variables → Actions → Variables) to the resulting URL and re-run the
+Pages workflow. Verify with `curl <url>/api/health` and by running Compress
+PDF on the live site. This is the single remaining step to make all 24
+tools live — everything else is done.

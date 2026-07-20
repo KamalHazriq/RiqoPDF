@@ -33,6 +33,10 @@ jobs:
         env:
           STATIC_EXPORT: "1"
           NEXT_PUBLIC_BASE_PATH: /RiqoPDF
+          # Set this repo variable (Settings > Secrets and variables > Actions
+          # > Variables) once the backend is deployed — see DEPLOY.md. Empty
+          # keeps the current "8 browser tools only" behavior.
+          NEXT_PUBLIC_API_BASE: ${{ vars.NEXT_PUBLIC_API_BASE }}
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
