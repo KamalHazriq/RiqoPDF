@@ -3,10 +3,27 @@ export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:80
 export class ApiError extends Error {}
 
 export async function callTool(path: string, formData: FormData): Promise<Response> {
-  const res = await fetch(`${API_BASE}/api/tools/${path}`, {
-    method: "POST",
-    body: formData,
-  });
+  // Privacy-first: tools with a browser-side implementation run entirely
+  // locally — the file never leaves the user's machine. Engines return null
+  // to fall through to the backend (e.g. image watermark).
+  const { clientEngines } = await import("./client-tools");
+  const engine = clientEngines[path];
+  if (engine) {
+    const local = await engine(formData);
+    if (local) return local;
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}/api/tools/${path}`, {
+      method: "POST",
+      body: formData,
+    });
+  } catch {
+    throw new ApiError(
+      "This tool needs the RiqoPDF backend server, which isn't reachable from this deployment. Run the app locally with Docker Compose to use it.",
+    );
+  }
 
   if (!res.ok) {
     let message = `Request failed (${res.status})`;
