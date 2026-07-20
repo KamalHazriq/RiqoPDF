@@ -19,6 +19,11 @@ export function ToolCard({ tool }: { tool: Tool }) {
             Coming soon
           </span>
         )}
+        {isAvailable && tool.local && (
+          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+            In your browser
+          </span>
+        )}
       </div>
       <div>
         <h3 className="font-medium text-neutral-900 dark:text-white">{tool.name}</h3>

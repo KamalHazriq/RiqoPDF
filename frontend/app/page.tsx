@@ -21,7 +21,10 @@ export default function Home() {
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-neutral-500 dark:text-neutral-400">
           One place for every PDF task — convert, edit, compress, organize, and secure your
-          documents. Nothing is stored after processing.
+          documents. Tools marked{" "}
+          <span className="font-medium text-emerald-600 dark:text-emerald-400">In your browser</span>{" "}
+          process files entirely on your device; the rest use a server that deletes everything
+          after processing.
         </p>
       </section>
 

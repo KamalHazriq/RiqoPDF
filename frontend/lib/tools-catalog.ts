@@ -6,6 +6,8 @@ export interface Tool {
   description: string;
   icon: string; // lucide-react icon name
   status: ToolStatus;
+  /** True when the tool runs entirely in the browser — no upload, works on the static site. */
+  local?: boolean;
 }
 
 export interface ToolCategory {
@@ -17,12 +19,12 @@ export const CATEGORIES: ToolCategory[] = [
   {
     name: "Organize PDF",
     tools: [
-      { slug: "merge-pdf", name: "Merge PDF", description: "Combine multiple PDFs into one document.", icon: "Layers", status: "available" },
-      { slug: "split-pdf", name: "Split PDF", description: "Extract selected pages or split every page.", icon: "Scissors", status: "available" },
-      { slug: "organize-pdf", name: "Organize PDF", description: "Delete, reorder, or duplicate pages.", icon: "ListOrdered", status: "available" },
-      { slug: "rotate-pdf", name: "Rotate PDF", description: "Rotate selected pages to the correct orientation.", icon: "RotateCw", status: "available" },
-      { slug: "crop-pdf", name: "Crop PDF", description: "Crop margins or selected pages.", icon: "Crop", status: "available" },
-      { slug: "page-numbers", name: "Page Numbers", description: "Add customizable page numbers.", icon: "Hash", status: "available" },
+      { slug: "merge-pdf", local: true, name: "Merge PDF", description: "Combine multiple PDFs into one document.", icon: "Layers", status: "available" },
+      { slug: "split-pdf", local: true, name: "Split PDF", description: "Extract selected pages or split every page.", icon: "Scissors", status: "available" },
+      { slug: "organize-pdf", local: true, name: "Organize PDF", description: "Delete, reorder, or duplicate pages.", icon: "ListOrdered", status: "available" },
+      { slug: "rotate-pdf", local: true, name: "Rotate PDF", description: "Rotate selected pages to the correct orientation.", icon: "RotateCw", status: "available" },
+      { slug: "crop-pdf", local: true, name: "Crop PDF", description: "Crop margins or selected pages.", icon: "Crop", status: "available" },
+      { slug: "page-numbers", local: true, name: "Page Numbers", description: "Add customizable page numbers.", icon: "Hash", status: "available" },
     ],
   },
   {
@@ -43,7 +45,7 @@ export const CATEGORIES: ToolCategory[] = [
       { slug: "excel-to-pdf", name: "Excel to PDF", description: "Convert XLSX to PDF.", icon: "Sheet", status: "available" },
       { slug: "powerpoint-to-pdf", name: "PowerPoint to PDF", description: "Convert PPTX to PDF.", icon: "Presentation", status: "available" },
       { slug: "pdf-to-jpg", name: "PDF to JPG", description: "Convert PDF pages into images.", icon: "Image", status: "available" },
-      { slug: "jpg-to-pdf", name: "JPG to PDF", description: "Convert images into a PDF document.", icon: "ImagePlus", status: "available" },
+      { slug: "jpg-to-pdf", local: true, name: "JPG to PDF", description: "Convert images into a PDF document.", icon: "ImagePlus", status: "available" },
       { slug: "pdf-to-html", name: "PDF to HTML", description: "Convert PDF into an HTML page.", icon: "Code2", status: "available" },
       { slug: "pdf-to-markdown", name: "PDF to Markdown", description: "Convert PDF into Markdown.", icon: "FileCode", status: "available" },
     ],
@@ -52,7 +54,7 @@ export const CATEGORIES: ToolCategory[] = [
     name: "Edit PDF",
     tools: [
       { slug: "edit-pdf", name: "Edit PDF", description: "Add text, images, shapes, highlights, and annotations.", icon: "Pencil", status: "coming-soon" },
-      { slug: "watermark", name: "Watermark", description: "Add a text or image watermark.", icon: "Stamp", status: "available" },
+      { slug: "watermark", local: true, name: "Watermark", description: "Add a text or image watermark.", icon: "Stamp", status: "available" },
       { slug: "redact-pdf", name: "Redact PDF", description: "Permanently remove sensitive text or images.", icon: "EyeOff", status: "available" },
       { slug: "pdf-forms", name: "PDF Forms", description: "Create fillable fields, checkboxes, and text inputs.", icon: "ClipboardList", status: "available" },
       { slug: "sign-pdf", name: "Sign PDF", description: "Draw, upload, or place a signature.", icon: "PenTool", status: "available" },

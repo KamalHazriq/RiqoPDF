@@ -33,6 +33,9 @@ Word/Excel/PowerPoint→PDF and PDF→HTML require LibreOffice
 as `soffice`; the reverse conversions (PDF→Word/Excel/PowerPoint,
 PDF→Markdown) don't need it.
 
+See `SESSION_NOTES.md` for per-session decisions, technical debt, and
+next steps.
+
 **Frontend** (Next.js 15):
 
 ```bash
@@ -52,8 +55,8 @@ Pushing to `master` auto-deploys a static build to GitHub Pages via
 
 **https://kamalhazriq.github.io/RiqoPDF/**
 
-On the static site there is no backend, so tools run **entirely in your
-browser** via pdf-lib where possible: Merge, Split, Rotate, Organize,
+The site is live. On it there is no backend, so tools marked **“In your
+browser”** run entirely on your device via pdf-lib: Merge, Split, Rotate, Organize,
 JPG→PDF, Crop, Page Numbers, and text Watermark. Files never leave your
 machine for those tools. Backend-dependent tools (compression, office
 conversion, OCR, etc.) show a notice pointing to the Docker setup below.
