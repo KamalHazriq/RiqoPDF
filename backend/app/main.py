@@ -20,6 +20,7 @@ from .routers import (
     pdf_to_word,
     protect,
     redact,
+    repair,
     rotate,
     sign,
     split,
@@ -63,6 +64,7 @@ app.include_router(forms.router, prefix="/api/tools", tags=["forms"])
 app.include_router(protect.router, prefix="/api/tools", tags=["protect"])
 app.include_router(crop_pages.router, prefix="/api/tools", tags=["crop"])
 app.include_router(page_numbers.router, prefix="/api/tools", tags=["page-numbers"])
+app.include_router(repair.router, prefix="/api/tools", tags=["repair"])
 
 
 @app.get("/api/health")

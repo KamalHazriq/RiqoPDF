@@ -29,7 +29,7 @@ export const CATEGORIES: ToolCategory[] = [
     name: "Optimize PDF",
     tools: [
       { slug: "compress-pdf", name: "Compress PDF", description: "Reduce file size with extreme, recommended, or low compression.", icon: "Minimize2", status: "available" },
-      { slug: "repair-pdf", name: "Repair PDF", description: "Fix corrupted PDFs and recover readable pages.", icon: "Wrench", status: "coming-soon" },
+      { slug: "repair-pdf", name: "Repair PDF", description: "Fix corrupted PDFs and recover readable pages.", icon: "Wrench", status: "available" },
       { slug: "pdf-to-pdfa", name: "PDF/A Conversion", description: "Convert PDFs into archival PDF/A format.", icon: "Archive", status: "coming-soon" },
     ],
   },
