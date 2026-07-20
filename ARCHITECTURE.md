@@ -99,7 +99,13 @@ RiqoPDF/
     │       ├── rotate.py
     │       ├── organize.py          # delete pages
     │       ├── jpg_to_pdf.py
-    │       └── pdf_to_jpg.py
+    │       ├── pdf_to_jpg.py
+    │       ├── convert.py           # office <-> pdf, pdf -> html (LibreOffice)
+    │       ├── pdf_to_word.py       # pdf -> docx (PyMuPDF + python-docx)
+    │       ├── pdf_to_excel.py      # pdf -> xlsx (PyMuPDF + openpyxl)
+    │       ├── pdf_to_powerpoint.py # pdf -> pptx (PyMuPDF + python-pptx)
+    │       └── pdf_to_markdown.py
+    ├── office.py                    # shared LibreOffice headless helper
     ├── requirements.txt
     └── Dockerfile
 ```
@@ -110,18 +116,26 @@ RiqoPDF/
 primitives, Framer Motion.
 
 **Backend:** FastAPI, uvicorn, pypdf, PyMuPDF (fitz), Pillow,
-python-multipart. Ghostscript is used for compression in the containerized
-deployment (`backend/Dockerfile`); locally, when the `gs` binary isn't
-available, compression falls back to a PyMuPDF-based re-save with image
-downsampling so the feature still works without the system dependency.
+python-multipart, python-docx, openpyxl, python-pptx. Ghostscript is used
+for compression in the containerized deployment (`backend/Dockerfile`);
+locally, when the `gs` binary isn't available, compression falls back to a
+PyMuPDF-based re-save with image downsampling so the feature still works
+without the system dependency. LibreOffice (`libreoffice-writer`,
+`-calc`, `-impress`) drives Word/Excel/PowerPoint → PDF and PDF → HTML;
+the reverse office conversions (PDF → Word/Excel/PowerPoint) don't use
+LibreOffice — its PDF import isn't text-reflow capable in a headless
+install — and instead reconstruct the target format directly from
+PyMuPDF-extracted text/tables/page-images.
 
 ## 5. Development Roadmap
 
-- **Phase 1 (this change):** Merge, Split, Compress, JPG→PDF, PDF→JPG,
+- **Phase 1 (done):** Merge, Split, Compress, JPG→PDF, PDF→JPG,
   Rotate, Delete pages — end-to-end (frontend tool pages + backend routes),
   no database, temp-file-only storage.
-- **Phase 2:** Office format conversion (Word/Excel/PowerPoint ↔ PDF, HTML)
-  via LibreOffice headless, as its own backend service.
+- **Phase 2 (done):** Office format conversion — Word/Excel/PowerPoint →
+  PDF and PDF → HTML via LibreOffice headless; PDF → Word/Excel/PowerPoint
+  and PDF → Markdown via PyMuPDF-based reconstruction (see dependency notes
+  above for why these don't share one code path).
 - **Phase 3:** Editing tools (watermark, sign, redact, forms) — needs a
   canvas-based editor in the frontend.
 - **Phase 4:** AI features (OCR, summarizer, translate, chat-with-PDF) —

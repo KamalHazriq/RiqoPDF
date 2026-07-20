@@ -21,6 +21,12 @@ def require_pdf(filename: str | None) -> None:
         raise HTTPException(400, "Only .pdf files are accepted")
 
 
+def require_extension(filename: str | None, allowed: tuple[str, ...]) -> None:
+    if not filename or filename.lower().rsplit(".", 1)[-1] not in allowed:
+        allowed_list = ", ".join(f".{e}" for e in allowed)
+        raise HTTPException(400, f"Only {allowed_list} files are accepted")
+
+
 def parse_page_indices(pages_spec: str, page_count: int) -> list[int]:
     """Parse a 1-based spec like '1,3,5-7' into 0-based sorted unique indices."""
     indices: set[int] = set()

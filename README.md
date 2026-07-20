@@ -2,8 +2,12 @@
 
 A free, privacy-first PDF toolkit — "One place for every PDF task." See
 `PROJECT_PROMPT.md` for the full product spec and `ARCHITECTURE.md` for the
-system design. This repo currently implements **Phase 1**: Merge, Split,
-Compress, Rotate, Organize (delete pages), JPG→PDF, and PDF→JPG.
+system design. This repo currently implements:
+
+- **Phase 1:** Merge, Split, Compress, Rotate, Organize (delete pages),
+  JPG→PDF, and PDF→JPG.
+- **Phase 2:** Word/Excel/PowerPoint→PDF, PDF→Word/Excel/PowerPoint,
+  PDF→HTML, PDF→Markdown.
 
 No database, no accounts — every request is upload → process → download,
 with uploaded files deleted immediately after processing (and swept after
@@ -22,6 +26,10 @@ uvicorn app.main:app --reload --port 8000
 
 Compression uses Ghostscript when available on the system (`gs` on PATH);
 otherwise it falls back to a PyMuPDF-based re-save with image downsampling.
+Word/Excel/PowerPoint→PDF and PDF→HTML require LibreOffice
+(`libreoffice-writer`, `libreoffice-calc`, `libreoffice-impress`) on PATH
+as `soffice`; the reverse conversions (PDF→Word/Excel/PowerPoint,
+PDF→Markdown) don't need it.
 
 **Frontend** (Next.js 15):
 

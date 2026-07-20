@@ -4,7 +4,20 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import compress, jpg_to_pdf, merge, organize, pdf_to_jpg, rotate, split
+from .routers import (
+    compress,
+    convert,
+    jpg_to_pdf,
+    merge,
+    organize,
+    pdf_to_excel,
+    pdf_to_jpg,
+    pdf_to_markdown,
+    pdf_to_powerpoint,
+    pdf_to_word,
+    rotate,
+    split,
+)
 from .storage import sweeper_loop
 
 
@@ -31,6 +44,11 @@ app.include_router(rotate.router, prefix="/api/tools", tags=["rotate"])
 app.include_router(organize.router, prefix="/api/tools", tags=["organize"])
 app.include_router(jpg_to_pdf.router, prefix="/api/tools", tags=["jpg-to-pdf"])
 app.include_router(pdf_to_jpg.router, prefix="/api/tools", tags=["pdf-to-jpg"])
+app.include_router(convert.router, prefix="/api/tools", tags=["convert"])
+app.include_router(pdf_to_markdown.router, prefix="/api/tools", tags=["pdf-to-markdown"])
+app.include_router(pdf_to_word.router, prefix="/api/tools", tags=["pdf-to-word"])
+app.include_router(pdf_to_excel.router, prefix="/api/tools", tags=["pdf-to-excel"])
+app.include_router(pdf_to_powerpoint.router, prefix="/api/tools", tags=["pdf-to-powerpoint"])
 
 
 @app.get("/api/health")
