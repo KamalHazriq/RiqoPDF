@@ -9,6 +9,7 @@ system design. This repo currently implements:
 - **Phase 2:** Word/Excel/PowerPoint→PDF, PDF→Word/Excel/PowerPoint,
   PDF→HTML, PDF→Markdown.
 - **Phase 3:** Watermark, Sign PDF, Redact PDF, PDF Forms.
+- **Extras:** Protect PDF (AES-256), Unlock PDF, Crop PDF, Page Numbers.
 
 No database, no accounts — every request is upload → process → download,
 with uploaded files deleted immediately after processing (and swept after

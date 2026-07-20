@@ -21,8 +21,8 @@ export const CATEGORIES: ToolCategory[] = [
       { slug: "split-pdf", name: "Split PDF", description: "Extract selected pages or split every page.", icon: "Scissors", status: "available" },
       { slug: "organize-pdf", name: "Organize PDF", description: "Delete, reorder, or duplicate pages.", icon: "ListOrdered", status: "available" },
       { slug: "rotate-pdf", name: "Rotate PDF", description: "Rotate selected pages to the correct orientation.", icon: "RotateCw", status: "available" },
-      { slug: "crop-pdf", name: "Crop PDF", description: "Crop margins or selected pages.", icon: "Crop", status: "coming-soon" },
-      { slug: "page-numbers", name: "Page Numbers", description: "Add customizable page numbers.", icon: "Hash", status: "coming-soon" },
+      { slug: "crop-pdf", name: "Crop PDF", description: "Crop margins or selected pages.", icon: "Crop", status: "available" },
+      { slug: "page-numbers", name: "Page Numbers", description: "Add customizable page numbers.", icon: "Hash", status: "available" },
     ],
   },
   {
@@ -61,8 +61,8 @@ export const CATEGORIES: ToolCategory[] = [
   {
     name: "PDF Security",
     tools: [
-      { slug: "protect-pdf", name: "Protect PDF", description: "Add password encryption.", icon: "Lock", status: "coming-soon" },
-      { slug: "unlock-pdf", name: "Unlock PDF", description: "Remove a password you own.", icon: "Unlock", status: "coming-soon" },
+      { slug: "protect-pdf", name: "Protect PDF", description: "Add password encryption.", icon: "Lock", status: "available" },
+      { slug: "unlock-pdf", name: "Unlock PDF", description: "Remove a password you own.", icon: "Unlock", status: "available" },
       { slug: "compare-pdf", name: "Compare PDF", description: "Highlight differences between two PDFs.", icon: "GitCompare", status: "coming-soon" },
     ],
   },

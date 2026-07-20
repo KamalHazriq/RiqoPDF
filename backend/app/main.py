@@ -6,16 +6,19 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .routers import (
     compress,
+    crop_pages,
     convert,
     forms,
     jpg_to_pdf,
     merge,
     organize,
+    page_numbers,
     pdf_to_excel,
     pdf_to_jpg,
     pdf_to_markdown,
     pdf_to_powerpoint,
     pdf_to_word,
+    protect,
     redact,
     rotate,
     sign,
@@ -57,6 +60,9 @@ app.include_router(watermark.router, prefix="/api/tools", tags=["watermark"])
 app.include_router(redact.router, prefix="/api/tools", tags=["redact"])
 app.include_router(sign.router, prefix="/api/tools", tags=["sign"])
 app.include_router(forms.router, prefix="/api/tools", tags=["forms"])
+app.include_router(protect.router, prefix="/api/tools", tags=["protect"])
+app.include_router(crop_pages.router, prefix="/api/tools", tags=["crop"])
+app.include_router(page_numbers.router, prefix="/api/tools", tags=["page-numbers"])
 
 
 @app.get("/api/health")
