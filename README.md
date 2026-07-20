@@ -45,6 +45,19 @@ npm run dev
 Open http://localhost:3000. The frontend expects the backend at
 `NEXT_PUBLIC_API_BASE` (defaults to `http://localhost:8000`).
 
+## Live demo (GitHub Pages)
+
+Pushing to `master` auto-deploys a static build to GitHub Pages via
+`.github/workflows/deploy-pages.yml`:
+
+**https://kamalhazriq.github.io/RiqoPDF/**
+
+On the static site there is no backend, so tools run **entirely in your
+browser** via pdf-lib where possible: Merge, Split, Rotate, Organize,
+JPG→PDF, Crop, Page Numbers, and text Watermark. Files never leave your
+machine for those tools. Backend-dependent tools (compression, office
+conversion, OCR, etc.) show a notice pointing to the Docker setup below.
+
 ## Docker Compose
 
 ```bash
