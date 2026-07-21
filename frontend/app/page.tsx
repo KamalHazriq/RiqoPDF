@@ -1,5 +1,6 @@
 import { ShieldCheck } from "lucide-react";
 import { ToolCard } from "@/components/tool-card";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { CATEGORIES } from "@/lib/tools-catalog";
 
 export default function Home() {
@@ -8,9 +9,12 @@ export default function Home() {
       <header className="border-b border-neutral-200 dark:border-neutral-800">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <span className="text-lg font-semibold tracking-tight">RiqoPDF</span>
-          <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
-            <ShieldCheck size={16} />
-            Files auto-deleted after processing
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+              <ShieldCheck size={16} />
+              Files auto-deleted after processing
+            </div>
+            <ThemeToggle />
           </div>
         </div>
       </header>
