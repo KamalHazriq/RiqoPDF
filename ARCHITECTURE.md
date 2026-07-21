@@ -82,9 +82,13 @@ RiqoPDF/
 │   │   ├── ui/                      # shadcn-style primitives
 │   │   ├── tool-card.tsx
 │   │   ├── uploader.tsx
-│   │   └── process-flow.tsx         # upload -> options -> processing -> result
+│   │   ├── process-flow.tsx         # upload -> options -> processing -> result
+│   │   └── pdf-editor.tsx           # visual editor: pdf.js canvas + overlay
 │   ├── lib/
 │   │   ├── api.ts                   # fetch wrappers to backend
+│   │   ├── client-tools.ts          # browser-side tool engines (pdf-lib)
+│   │   ├── pdf-editor-types.ts      # Annotation model shared by editor + export
+│   │   ├── pdf-editor-export.ts     # bakes annotations into the PDF via pdf-lib
 │   │   └── tools-catalog.ts         # single source of truth for all tools/categories
 │   └── ...
 └── backend/                         # FastAPI service
@@ -103,7 +107,10 @@ RiqoPDF/
     │       ├── convert.py           # office <-> pdf, pdf -> html (LibreOffice)
     │       ├── pdf_to_word.py       # pdf -> docx (PyMuPDF + python-docx)
     │       ├── pdf_to_excel.py      # pdf -> xlsx (PyMuPDF + openpyxl)
-    │       ├── pdf_to_powerpoint.py # pdf -> pptx (PyMuPDF + python-pptx)
+    │       ├── pdf_to_powerpoint.py # pdf -> pptx: real per-line text boxes
+    │       │                       # + embedded images at original position
+    │       │                       # (PyMuPDF text/image extraction + python-pptx),
+    │       │                       # not a full-page raster per slide
     │       ├── pdf_to_markdown.py
     │       ├── watermark.py         # text/image watermark, tiled or anchored
     │       ├── redact.py            # true text removal (PyMuPDF redaction annots)
@@ -117,7 +124,10 @@ RiqoPDF/
 ## 4. Required Dependencies
 
 **Frontend:** Next.js 15, React 19, TypeScript, Tailwind CSS, shadcn/ui
-primitives, Framer Motion.
+primitives, Framer Motion, pdf-lib (client-side tools + PDF editor export),
+pdfjs-dist (PDF editor page rendering — pinned to 4.x; 6.x's worker relies
+on a JS engine method not yet reliably available, which silently blanked
+the canvas during testing).
 
 **Backend:** FastAPI, uvicorn, pypdf, PyMuPDF (fitz), Pillow,
 python-multipart, python-docx, openpyxl, python-pptx. Ghostscript is used
@@ -143,12 +153,14 @@ PyMuPDF-extracted text/tables/page-images.
 - **Phase 3 (done):** Watermark (text/image, tiled or anchored), Sign PDF
   (draw-on-canvas or upload a signature image), Redact PDF (true removal via
   PyMuPDF redaction annotations, not just a black box overlay), PDF Forms
-  (text/checkbox widgets placed by percentage coordinates). No visual PDF
-  page canvas was built — placement stays numeric/percentage-based to match
-  the rest of the app's pattern (e.g. page-range specs on Split/Rotate);
-  a full drag-and-drop canvas editor (for the general "Edit PDF" tool with
-  freeform text/shapes/highlights) is still open and would be the next
-  Phase 3 increment if pursued.
+  (text/checkbox widgets placed by percentage coordinates), and **Edit PDF**
+  — a real client-side visual editor (pdf.js renders each page to a canvas,
+  an absolutely-positioned overlay handles click/drag placement of text,
+  rectangles, highlights, and images as percentage-of-page geometry, and
+  pdf-lib bakes them into the actual PDF on export). This is the one tool
+  that breaks from the rest of the app's numeric/percentage-input pattern
+  by design — "editor" means WYSIWYG placement, not a form. Runs entirely
+  in the browser like the other client-side tools.
 - **Phase 4:** AI features (OCR, summarizer, translate, chat-with-PDF) —
   first phase that plausibly needs a database (auth, usage limits, job
   history) and external LLM/OCR calls.

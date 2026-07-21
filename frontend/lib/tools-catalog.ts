@@ -53,7 +53,7 @@ export const CATEGORIES: ToolCategory[] = [
   {
     name: "Edit PDF",
     tools: [
-      { slug: "edit-pdf", name: "Edit PDF", description: "Add text, images, shapes, highlights, and annotations.", icon: "Pencil", status: "coming-soon" },
+      { slug: "edit-pdf", local: true, name: "Edit PDF", description: "Add text, images, shapes, highlights, and annotations.", icon: "Pencil", status: "available" },
       { slug: "watermark", local: true, name: "Watermark", description: "Add a text or image watermark.", icon: "Stamp", status: "available" },
       { slug: "redact-pdf", name: "Redact PDF", description: "Permanently remove sensitive text or images.", icon: "EyeOff", status: "available" },
       { slug: "pdf-forms", name: "PDF Forms", description: "Create fillable fields, checkboxes, and text inputs.", icon: "ClipboardList", status: "available" },
