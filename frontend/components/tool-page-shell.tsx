@@ -20,7 +20,7 @@ export function ToolPageShell({
         <div className={cn("mx-auto flex items-center justify-between px-6 py-4", wide ? "max-w-5xl" : "max-w-2xl")}>
           <Link
             href="/"
-            className="flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+            className="flex items-center gap-1 rounded-md text-sm text-neutral-500 transition-colors hover:text-primary-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-950"
           >
             <ArrowLeft size={16} />
             All tools

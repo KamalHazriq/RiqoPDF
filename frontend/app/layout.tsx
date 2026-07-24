@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RiqoPDF — Every PDF tool you need",
+  title: "RiqoPDF",
   description: "A free, privacy-first PDF toolkit. Convert, edit, compress, organize, and secure PDFs — no account required.",
 };
 

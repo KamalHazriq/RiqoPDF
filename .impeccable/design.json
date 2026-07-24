@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-25T00:00:00Z",
+  "title": "Design System: RiqoPDF",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Riqo Blue",
+        "canonical": "#004cc0",
+        "tonalRamp": ["#001229", "#00234f", "#003a94", "#004cc0", "#2f6fd4", "#6b9ce3", "#a9c6ef", "#e8f0fd"]
+      },
+      "local-signal": {
+        "role": "secondary",
+        "displayName": "Local-Signal Green",
+        "canonical": "#059669",
+        "tonalRamp": ["#022c22", "#064e3b", "#047857", "#059669", "#10b981", "#34d399", "#6ee7b7", "#ecfdf5"]
+      },
+      "neutral-surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "canonical": "#fafafa",
+        "tonalRamp": ["#0a0a0a", "#171717", "#262626", "#404040", "#737373", "#a3a3a3", "#e5e5e5", "#fafafa"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Homepage hero line only." },
+      "title": { "displayName": "Title", "purpose": "Tool card names, tool-page section headings." },
+      "body": { "displayName": "Body", "purpose": "Descriptions, help text, tool-page copy." },
+      "label": { "displayName": "Label", "purpose": "Category headers, badges, form field labels." }
+    },
+    "shadows": [
+      { "name": "resting", "value": "0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06)", "purpose": "Default depth for every card at rest (light mode)." },
+      { "name": "hover-lift", "value": "0 2px 4px rgba(0,0,0,0.06), 0 12px 24px rgba(0,0,0,0.10)", "purpose": "Card hover/focus, paired with a 2px upward translate." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default easing for shadow, transform, and color transitions." },
+      { "name": "duration-fast", "value": "150ms", "purpose": "Hover/focus state transitions." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main call-to-action button (upload, process, download).",
+      "html": "<button class=\"ds-btn-primary\">Upload PDF</button>",
+      "css": ".ds-btn-primary { background: #004cc0; color: #ffffff; padding: 10px 20px; border-radius: 8px; font-weight: 500; font-size: 0.875rem; border: none; transition: background 150ms cubic-bezier(0.4,0,0.2,1), transform 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-primary:hover { background: #003a94; } .ds-btn-primary:focus-visible { outline: 2px solid #004cc0; outline-offset: 2px; } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Tool Card",
+      "kind": "card",
+      "refersTo": "card-tool",
+      "description": "Marketplace tile for a single PDF tool on the dashboard.",
+      "html": "<div class=\"ds-card-tool\"><div class=\"ds-card-tool-icon\">📄</div><h3 class=\"ds-card-tool-title\">Merge PDF</h3><p class=\"ds-card-tool-desc\">Combine multiple PDFs into one document.</p></div>",
+      "css": ".ds-card-tool { background: #fafafa; border: 1px solid #e5e5e5; border-radius: 12px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06); transition: box-shadow 150ms cubic-bezier(0.4,0,0.2,1), transform 150ms cubic-bezier(0.4,0,0.2,1); } .ds-card-tool:hover, .ds-card-tool:focus-visible { box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 12px 24px rgba(0,0,0,0.10); transform: translateY(-2px); } .ds-card-tool-title { font-weight: 500; font-size: 1rem; color: #171717; margin: 8px 0 4px; } .ds-card-tool-desc { font-size: 0.875rem; color: #737373; line-height: 1.5; }"
+    },
+    {
+      "name": "Local Badge",
+      "kind": "chip",
+      "refersTo": "badge-local",
+      "description": "\"In your browser\" privacy indicator — the only place Local-Signal Green appears.",
+      "html": "<span class=\"ds-badge-local\">In your browser</span>",
+      "css": ".ds-badge-local { display: inline-flex; align-items: center; background: #ecfdf5; color: #047857; font-size: 11px; font-weight: 500; padding: 2px 10px; border-radius: 9999px; }"
+    },
+    {
+      "name": "Coming Soon Badge",
+      "kind": "chip",
+      "refersTo": "badge-coming-soon",
+      "description": "Deliberately quiet neutral badge for unbuilt tools.",
+      "html": "<span class=\"ds-badge-soon\">Coming soon</span>",
+      "css": ".ds-badge-soon { display: inline-flex; align-items: center; background: #f5f5f5; color: #737373; font-size: 11px; font-weight: 500; padding: 2px 10px; border-radius: 9999px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Friendly Workbench",
+    "overview": "RiqoPDF is a tool marketplace, not a marketing site — but a workbench doesn't have to feel cold. The system stays close to a Linear/Vercel-style neutral foundation but warms it up the way Notion does: rounder corners, a soft resting shadow under every card instead of flat-until-hover, and one confident, deep blue pulled from the RiqoPDF logo as the single brand accent.",
+    "keyCharacteristics": [
+      "Near-monochrome neutral base; color is meaningful, not decorative",
+      "Soft ambient shadow at rest on every card (not just on hover)",
+      "Rounder corners than a pure Linear aesthetic (12–16px)",
+      "One brand accent (deep blue), one reserved semantic accent (green, local only)",
+      "System font stack, no display webfont"
+    ],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "Riqo Blue appears on at most one element per view unless that element is a repeated list. It marks the single next action, never decoration.", "section": "colors" },
+      { "name": "The Green Means Local Rule", "body": "Local-Signal Green never appears anywhere except the \"runs in your browser\" badge family.", "section": "colors" },
+      { "name": "The No-Serif Rule", "body": "Nothing in this system uses a serif or display webfont.", "section": "typography" },
+      { "name": "The Always-Raised Rule", "body": "Cards are never perfectly flat against the page background in either theme.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep exactly one brand accent (Riqo Blue) and one reserved semantic accent (green, local-only)",
+      "Do give every card a resting shadow (light) or resting border+surface-tone (dark)",
+      "Do use 12–16px radii as the default",
+      "Do hold every color pair to WCAG 2.1 AA contrast in both themes"
+    ],
+    "donts": [
+      "Don't use Local-Signal Green for anything except the \"processed locally\" claim",
+      "Don't introduce a display/serif webfont",
+      "Don't copy iLovePDF's branding, logo, or layout",
+      "Don't rely on color alone to convey state"
+    ]
+  }
+}

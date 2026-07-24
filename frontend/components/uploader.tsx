@@ -45,11 +45,11 @@ export function Uploader({ accept, multiple = false, files, onFilesChange, label
         className={cn(
           "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-10 text-center transition-colors",
           dragActive
-            ? "border-neutral-900 bg-neutral-50 dark:border-white dark:bg-neutral-900"
-            : "border-neutral-200 hover:border-neutral-400 dark:border-neutral-800 dark:hover:border-neutral-600",
+            ? "border-primary bg-primary-tint"
+            : "border-neutral-200 hover:border-primary/50 dark:border-neutral-800 dark:hover:border-neutral-600",
         )}
       >
-        <UploadCloud className="text-neutral-400" size={28} />
+        <UploadCloud className={cn(dragActive ? "text-primary-text" : "text-neutral-400")} size={28} />
         <p className="text-sm text-neutral-600 dark:text-neutral-300">
           {label ?? "Drag & drop or click to upload"}
         </p>

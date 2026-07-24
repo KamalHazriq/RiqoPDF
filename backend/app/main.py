@@ -12,6 +12,7 @@ from .routers import (
     forms,
     jpg_to_pdf,
     merge,
+    ocr,
     organize,
     page_numbers,
     pdf_to_excel,
@@ -66,6 +67,7 @@ app.include_router(protect.router, prefix="/api/tools", tags=["protect"])
 app.include_router(crop_pages.router, prefix="/api/tools", tags=["crop"])
 app.include_router(page_numbers.router, prefix="/api/tools", tags=["page-numbers"])
 app.include_router(repair.router, prefix="/api/tools", tags=["repair"])
+app.include_router(ocr.router, prefix="/api/tools", tags=["ocr"])
 
 
 @app.get("/api/health")

@@ -19,7 +19,7 @@ def convert_with_libreoffice(src: Path, target_ext: str, job_dir: Path) -> Path:
             "soffice",
             "--headless",
             "--norestore",
-            f"-env:UserInstallation=file://{profile_dir}",
+            f"-env:UserInstallation={profile_dir.as_uri()}",
             "--convert-to", target_ext,
             "--outdir", str(job_dir),
             str(src),

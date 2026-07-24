@@ -72,7 +72,7 @@ export const CATEGORIES: ToolCategory[] = [
     name: "PDF Intelligence",
     tools: [
       { slug: "scan-to-pdf", name: "Scan to PDF", description: "Camera upload, image cleanup, and scan conversion.", icon: "ScanLine", status: "coming-soon" },
-      { slug: "ocr-pdf", name: "OCR PDF", description: "Turn scanned PDFs into searchable text.", icon: "ScanText", status: "coming-soon" },
+      { slug: "ocr-pdf", name: "OCR PDF", description: "Turn scanned PDFs into searchable text.", icon: "ScanText", status: "available" },
       { slug: "ai-summarizer", name: "AI PDF Summarizer", description: "Generate a summary and key points.", icon: "Sparkles", status: "coming-soon" },
       { slug: "translate-pdf", name: "Translate PDF", description: "Translate PDF text while keeping formatting.", icon: "Languages", status: "coming-soon" },
     ],

@@ -5,6 +5,152 @@ pick up next. Newest session first.
 
 ---
 
+## Session 3 — 2026-07-25 · Local clone recovery, design system, OCR PDF
+
+### What shipped
+- **Local clone was stuck at the very first commit** (`f1e9d48`, before any
+  real work landed) — a fresh `git clone` had apparently never been updated
+  against `origin/master`. Fixed with `git fetch --all` + fast-forward;
+  `claude/project-prompt-ramwlq` reset to `origin/master` per the working
+  convention. No code was lost, just a stale local checkout.
+- **Favicon confirmed** (it's the real logo — silver "riqo" wordmark, red
+  flag accent, olive/yellow/blue block behind "q"/"o") and the browser tab
+  title trimmed to plain "RiqoPDF" (was "RiqoPDF — Every PDF tool you need").
+- **Impeccable design tool installed** (`npx impeccable install`) and run
+  through its full `init` → `document` flow: `PRODUCT.md` and `DESIGN.md`
+  now exist at the repo root, plus `.impeccable/design.json`. Chosen
+  direction: "The Friendly Workbench" — warmer/rounder than a strict Linear
+  look, soft resting shadow on every card (not just hover), one accent color
+  (**Riqo Blue**, `#004cc0`, sampled directly from the logo's "o" ring —
+  extracted via a small hand-rolled PNG pixel-sampler since neither Python
+  nor Node had an image lib installed) plus the pre-existing local-signal
+  green kept **exclusively** for the "In your browser" badge (never mixed
+  with the brand accent — see DESIGN.md's "Green Means Local" rule).
+  Implemented across `globals.css` tokens, `Button`, `Card`, `ToolCard`,
+  `ThemeToggle`, `Uploader`, `ProcessFlow`, and the homepage hero.
+- **OCR PDF shipped** (`backend/app/routers/ocr.py`, `frontend/app/tools/ocr-pdf/`)
+  using Tesseract via `ocrmypdf`, not a GPU vision-language model — see
+  "Decision: OCR model choice" below. Supports the spec's four languages
+  (English, Malay, Chinese, Japanese). Catalog entry flipped from
+  "coming-soon" to "available".
+- **All 26 backend tool routes verified end-to-end with curl** against
+  generated test files (PDFs, docx/xlsx/pptx, jpg) — installed LibreOffice,
+  Ghostscript, Tesseract, and qpdf locally via `scoop` to make this possible
+  on Windows (see incidents below for two real bugs this surfaced and fixed).
+  A clean production `npm run build` also passes. Pushed to
+  `claude/project-prompt-ramwlq` (force-pushed over the stale remote tip,
+  whose one extra commit was already merged into `master` as #7 — the
+  documented, expected reset pattern for this branch, not a data-loss risk).
+
+### Decision: OCR model choice
+Considered `lightonai/LightOnOCR-2-1B` (a strong, modern VLM-based OCR
+model) but rejected it for this deployment: Render's free tier has **no
+GPU**, and a 1B-parameter vision-language model would be unusably slow (or
+OOM) on free-tier CPU/RAM. Tesseract (via `ocrmypdf`, which also handles the
+"embed an invisible searchable text layer over the original scan" part
+correctly, including skip-if-already-has-text and encrypted-PDF detection)
+is CPU-only and matches what the original `PROJECT_PROMPT.md` spec asked
+for. Revisit LightOnOCR only if the backend ever moves to a GPU-backed host.
+
+### Incidents worth remembering
+- **Tailwind v4's shadow-composition CSS treats the bare keyword `none` as
+  an invalid item inside its internal `--tw-shadow` chain.** Setting
+  `--shadow-resting: none;` in `.dark` silently made the *entire* `box-shadow`
+  declaration fail at compute time (CSS drops the whole property when any
+  one item in a var-composed list is invalid) — dark mode kept showing the
+  light-mode shadow. Fixed by using `0 0 #0000` (a real, invisible,
+  zero-value shadow) instead of the keyword. If a custom `--shadow-*` token
+  needs a "none" state and gets fed into any Tailwind arbitrary
+  `shadow-[var(--x)]` utility, always use `0 0 #0000`, never `none`.
+- **This sandbox's Browser-pane preview does not composite/paint frames**
+  (screenshots time out with "the Browser pane is not displayed"). Custom
+  CSS *property values* (`getComputedStyle(...).getPropertyValue('--x')`)
+  read reliably regardless, but *final painted* longhand values (computed
+  `box-shadow`, `border-color`) gave inconsistent/contradictory readings
+  across repeated identical tests — almost certainly because paint-only
+  style recalculation is throttled/skipped for a non-visible tab, not a
+  real cross-browser bug. Trust custom-property-level checks and contrast
+  math in this environment; don't trust repeated box-shadow/border-color
+  snapshots as proof either way. A real screenshot or the user's own eyes
+  are the only way to fully close the loop on visual (not token-level) design
+  verification here.
+- `npm --prefix <path-with-spaces>` fails on Windows when invoked through
+  this harness's `preview_start` (`'C:\Program' is not recognized...` even
+  though the space was in a *different* part of the path than "Program
+  Files" — likely npm.cmd's own install path). Fixed by using the Windows
+  8.3 short path (`C:\Users\KAMALH~1\...`, obtainable via
+  `(New-Object -ComObject Scripting.FileSystemObject).GetFolder(path).ShortPath`
+  in PowerShell) in `.claude/launch.json`'s `runtimeArgs`.
+- `preview_start`/`.claude/launch.json` resolve relative to the **fixed
+  primary working directory** for the whole Claude Code session, not
+  wherever `Bash`/`cd` last pointed. A `launch.json` written inside the
+  RiqoPDF repo itself was silently ignored; the entry had to go into the
+  primary directory's own `.claude/launch.json` instead (using an absolute
+  `--prefix` path to point at RiqoPDF's frontend).
+- Frontend `node_modules` had never been installed in this fresh clone
+  (`npm run dev` failed with `'next' is not recognized`) — plain `npm install`
+  fixed it. `npm audit` reports 3 high-severity vulnerabilities, not yet
+  triaged (new tech debt item below).
+- **Real bug: `office.py`'s LibreOffice profile flag was a malformed
+  `file://` URI on Windows** — built as `f"file://{profile_dir}"` where
+  `profile_dir` is a raw Windows path (`C:\Users\...`), producing
+  `file://C:\Users\...` (two slashes, backslashes). Windows then tries to
+  resolve `C:` as a network hostname, hanging `soffice` indefinitely (no
+  error, no timeout from LibreOffice itself — it just sits there consuming
+  ~225MB RAM forever). Confirmed by testing with the default profile (no
+  `-env:UserInstallation` override at all), which converted in 20s. Fixed
+  with `profile_dir.as_uri()` (Python's correct, cross-platform way to build
+  a `file://` URI from a path) — this was silently wrong on Linux too
+  (`file://` + POSIX path happens to parse correctly by luck since POSIX
+  paths start with `/`, giving three slashes total, but it was never
+  actually using the *correct* API for it).
+- **Real bug: `ocrmypdf==16.10.0` calls the now-renamed
+  `pikepdf.Pdf.check()` method**, which pip resolved to the newest
+  `pikepdf` (10.10.0, where it's `check_pdf_syntax()` instead) since
+  `ocrmypdf`'s own dependency metadata doesn't pin an upper bound. This
+  would break OCR PDF identically on the Render deploy, not just locally —
+  pinned `pikepdf==9.5.2` (last version with `.check()`) in
+  `requirements.txt`.
+- Separately on this Windows dev box (not a code bug, just a local-setup
+  gotcha worth remembering): scoop's `tesseract` and `tesseract-languages`
+  packages install to two different folders, and `tesseract-languages`
+  lacks the `configs`/`tessconfigs` directories Tesseract needs for
+  `hocr`/`txt` output formats — copying the four `.traineddata` files into
+  `tesseract`'s own `tessdata/` (alongside its `configs`/`tessconfigs`) and
+  pointing `TESSDATA_PREFIX` there was the fix. Not relevant to the Docker
+  deploy, whose `apt` packages install everything to one place correctly.
+
+### Technical debt (new)
+9. **npm audit reports 3 high-severity vulnerabilities** in frontend
+   dependencies — not triaged this session, should be checked with
+   `npm audit fix` (or manually, if fix requires a breaking upgrade) before
+   the next deploy.
+10. ~~OCR PDF has no local runtime verification~~ **Resolved this session**
+    — verified end-to-end with a real scan-like test PDF, producing an
+    actual searchable text layer (checked via `page.get_text()`).
+11. Carried over from Session 1: #2 (rate limiting), #3 (no automated test
+    suite), #4 (client/server logic drift risk), #5 (`unlock-pdf` redundant
+    exception ordering), #6 (in-memory zip on large splits). Carried over
+    from Session 2: #7 (`AnnotationView` discriminated-union narrowing),
+    #8 (Edit PDF resize handles / undo-redo).
+
+### Follow-up ideas (carried over + new)
+- Triage the 3 `npm audit` high-severity vulnerabilities.
+- Everything else carried over from Session 2 (drag-to-reorder pages,
+  client-side PDF→JPG, Compare PDF, PDF/A, Phase 4 AI features, Edit PDF
+  resize handles/undo-redo) is still open and unchanged.
+
+### Tomorrow's first task
+**Triage the `npm audit` high-severity findings**, then redeploy the Render
+backend (it needs the `office.py` URI fix, the `pikepdf==9.5.2` pin, and
+the new `ocr.py` router — none of that is live yet) and confirm OCR PDF and
+the office conversions still work against the real deploy, not just this
+local Windows box. Alternatively, if design feedback comes back from the
+owner's own visual check of the new "Friendly Workbench" system, start
+there instead.
+
+---
+
 ## Session 2 — 2026-07-21 · Backend live, PDF editor, PowerPoint fix
 
 ### What shipped

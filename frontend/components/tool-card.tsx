@@ -2,6 +2,7 @@ import Link from "next/link";
 import * as Icons from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import type { Tool } from "@/lib/tools-catalog";
 
 export function ToolCard({ tool }: { tool: Tool }) {
@@ -9,9 +10,15 @@ export function ToolCard({ tool }: { tool: Tool }) {
   const isAvailable = tool.status === "available";
 
   const content = (
-    <Card className="group flex h-full flex-col gap-3 p-5 transition-shadow hover:shadow-md hover:shadow-neutral-900/5">
+    <Card
+      className={cn(
+        "flex h-full flex-col gap-3 p-5 transition-[box-shadow,transform,border-color] duration-150 ease-out",
+        isAvailable &&
+          "group-hover:shadow-[var(--shadow-hover)] group-hover:-translate-y-0.5 group-hover:border-primary/30 group-focus-visible:shadow-[var(--shadow-hover)] group-focus-visible:-translate-y-0.5 group-focus-visible:border-primary group-focus-visible:ring-2 group-focus-visible:ring-primary/40 dark:group-hover:border-neutral-700 dark:group-focus-visible:border-neutral-700",
+      )}
+    >
       <div className="flex items-center justify-between">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-100 text-neutral-900 dark:bg-neutral-900 dark:text-white">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-tint text-primary-text dark:bg-neutral-900">
           <Icon size={20} />
         </div>
         {!isAvailable && (
@@ -20,7 +27,7 @@ export function ToolCard({ tool }: { tool: Tool }) {
           </span>
         )}
         {isAvailable && tool.local && (
-          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+          <span className="rounded-full bg-local-tint px-2 py-0.5 text-[11px] font-medium text-local-deep">
             In your browser
           </span>
         )}
@@ -37,7 +44,7 @@ export function ToolCard({ tool }: { tool: Tool }) {
   }
 
   return (
-    <Link href={`/tools/${tool.slug}`} className="block h-full">
+    <Link href={`/tools/${tool.slug}`} className="group block h-full focus-visible:outline-none">
       {content}
     </Link>
   );
