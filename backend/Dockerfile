@@ -5,6 +5,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libreoffice-writer \
     libreoffice-calc \
     libreoffice-impress \
+    qpdf \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    tesseract-ocr-msa \
+    tesseract-ocr-chi-sim \
+    tesseract-ocr-jpn \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

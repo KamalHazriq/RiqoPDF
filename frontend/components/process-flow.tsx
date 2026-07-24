@@ -59,9 +59,9 @@ export function ProcessFlow({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center gap-3 rounded-xl border border-neutral-200 p-8 dark:border-neutral-800"
+            className="flex flex-col items-center gap-3 rounded-2xl border border-neutral-200 bg-surface p-8 shadow-[var(--shadow-resting)] dark:border-neutral-800"
           >
-            <Loader2 className="animate-spin text-neutral-500" size={28} />
+            <Loader2 className="animate-spin text-primary-text" size={28} />
             <p className="text-sm text-neutral-500">Processing your file…</p>
           </motion.div>
         )}
@@ -71,7 +71,7 @@ export function ProcessFlow({
             key="done"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center gap-4 rounded-xl border border-neutral-200 p-8 dark:border-neutral-800"
+            className="flex flex-col items-center gap-4 rounded-2xl border border-neutral-200 bg-surface p-8 shadow-[var(--shadow-resting)] dark:border-neutral-800"
           >
             <CheckCircle2 className="text-green-600" size={32} />
             <p className="text-sm font-medium">Your file is ready</p>
@@ -83,7 +83,7 @@ export function ProcessFlow({
             <button
               type="button"
               onClick={() => setStage("idle")}
-              className="text-xs text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+              className="rounded-md text-xs text-neutral-400 transition-colors hover:text-primary-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-950"
             >
               Run again
             </button>
@@ -95,7 +95,7 @@ export function ProcessFlow({
             key="error"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-8 dark:border-red-900 dark:bg-red-950"
+            className="flex flex-col items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-8 shadow-[var(--shadow-resting)] dark:border-red-900 dark:bg-red-950"
           >
             <XCircle className="text-red-600" size={28} />
             <p className="text-sm text-red-700 dark:text-red-300">{error}</p>

@@ -12,6 +12,9 @@ system design. This repo currently implements:
   visual **Edit PDF** (add text, highlights, rectangles, and images by
   clicking/dragging on the page — runs entirely in the browser).
 - **Extras:** Protect PDF (AES-256), Unlock PDF, Crop PDF, Page Numbers.
+- **OCR PDF:** scanned/image PDF → searchable PDF via Tesseract (English,
+  Malay, Chinese, Japanese), run through `ocrmypdf`. CPU-only by design —
+  see `SESSION_NOTES.md` for why a GPU OCR model wasn't used instead.
 
 PDF→PowerPoint rebuilds real, editable text boxes and preserves embedded
 images at their original positions instead of flattening each page into
@@ -37,7 +40,9 @@ otherwise it falls back to a PyMuPDF-based re-save with image downsampling.
 Word/Excel/PowerPoint→PDF and PDF→HTML require LibreOffice
 (`libreoffice-writer`, `libreoffice-calc`, `libreoffice-impress`) on PATH
 as `soffice`; the reverse conversions (PDF→Word/Excel/PowerPoint,
-PDF→Markdown) don't need it.
+PDF→Markdown) don't need it. OCR PDF requires `tesseract-ocr` (plus the
+`eng`/`msa`/`chi-sim`/`jpn` language packs) and `qpdf` on PATH — see
+`backend/Dockerfile` for exact package names.
 
 See `SESSION_NOTES.md` for per-session decisions, technical debt, and
 next steps.
@@ -65,7 +70,7 @@ The site is live. On it there is no backend, so tools marked **“In your
 browser”** run entirely on your device via pdf-lib: Merge, Split, Rotate, Organize,
 JPG→PDF, Crop, Page Numbers, Edit PDF, and text Watermark. Files never leave
 your machine for those tools. Backend-dependent tools (compression, office
-conversion, OCR, etc.) show a notice pointing to the Docker setup below —
+conversion, OCR PDF, etc.) show a notice pointing to the Docker setup below —
 see `DEPLOY.md` to host the backend too and light up all remaining tools on
 the live site.
 
@@ -80,5 +85,6 @@ Frontend on http://localhost:3000, backend on http://localhost:8000.
 ## Roadmap
 
 See "Development Roadmap" in `ARCHITECTURE.md` for Phase 4 (AI features —
-OCR, summarizer, translate, chat-with-PDF), the last non-AI "coming soon"
-tools (Compare PDF, PDF/A), and technical debt in `SESSION_NOTES.md`.
+summarizer, translate, chat-with-PDF — OCR shipped ahead of schedule via
+Tesseract), the last non-AI "coming soon" tools (Compare PDF, PDF/A), and
+technical debt in `SESSION_NOTES.md`.

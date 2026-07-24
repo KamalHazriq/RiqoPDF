@@ -5,17 +5,69 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --surface: #fafafa;
+  --border-color: #e5e5e5;
+
+  /* Riqo Blue — the single brand accent, sampled from the logo mark. Kept
+     constant across themes: it's always paired with white button text, and
+     #004cc0-on-white clears 7.5:1 regardless of the page theme. */
+  --primary: #004cc0;
+  --primary-deep: #003a94;
+  --primary-tint: #e8f0fd;
+  /* For standalone text/link use (not on a solid --primary button) where the
+     surrounding background is --background, not white. */
+  --primary-text: #0047b3;
+
+  /* Local-Signal Green — reserved exclusively for "processed on your device" badges. */
+  --local: #059669;
+  --local-deep: #047857;
+  --local-tint: #ecfdf5;
+
+  --shadow-resting: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.06), 0 12px 24px rgba(0, 0, 0, 0.1);
+
   color-scheme: light;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-border-color: var(--border-color);
+  --color-primary: var(--primary);
+  --color-primary-deep: var(--primary-deep);
+  --color-primary-tint: var(--primary-tint);
+  --color-primary-text: var(--primary-text);
+  --color-local: var(--local);
+  --color-local-deep: var(--local-deep);
+  --color-local-tint: var(--local-tint);
 }
 
 .dark {
   --background: #0a0a0a;
   --foreground: #ededed;
+  --surface: #171717;
+  --border-color: #262626;
+
+  /* --primary itself is unchanged (always white-text-on-button, 7.5:1 either
+     theme). --primary-text is lighter here so blue links/focus rings still
+     clear 4.5:1 against a near-black page background. */
+  --primary-deep: #1a5fd6;
+  --primary-tint: #0f2540;
+  --primary-text: #5b9cf0;
+
+  --local: #34d399;
+  --local-deep: #6ee7b7;
+  --local-tint: #022c22;
+
+  /* Not the bare keyword "none" — Tailwind's --tw-shadow composition treats
+     "none" as an invalid item in its comma-separated shadow chain, which
+     makes the whole box-shadow declaration invalid at compute time and
+     silently falls back to the last valid (light-mode) value instead of
+     clearing it. A real zero-value shadow is the correct "no shadow" token. */
+  --shadow-resting: 0 0 #0000;
+  --shadow-hover: 0 0 #0000;
+
   color-scheme: dark;
 }
 

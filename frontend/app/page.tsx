@@ -21,12 +21,12 @@ export default function Home() {
 
       <section className="mx-auto w-full max-w-6xl px-6 py-16 text-center">
         <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-          Every PDF tool you need. <span className="text-neutral-400">Completely free.</span>
+          Every PDF tool you need. <span className="text-primary-text">Completely free.</span>
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-neutral-500 dark:text-neutral-400">
           One place for every PDF task — convert, edit, compress, organize, and secure your
           documents. Tools marked{" "}
-          <span className="font-medium text-emerald-600 dark:text-emerald-400">In your browser</span>{" "}
+          <span className="font-medium text-local-deep dark:text-local">In your browser</span>{" "}
           process files entirely on your device; the rest use a server that deletes everything
           after processing.
         </p>
