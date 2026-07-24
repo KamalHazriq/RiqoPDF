@@ -33,6 +33,14 @@ pick up next. Newest session first.
   "Decision: OCR model choice" below. Supports the spec's four languages
   (English, Malay, Chinese, Japanese). Catalog entry flipped from
   "coming-soon" to "available".
+- **All 26 backend tool routes verified end-to-end with curl** against
+  generated test files (PDFs, docx/xlsx/pptx, jpg) — installed LibreOffice,
+  Ghostscript, Tesseract, and qpdf locally via `scoop` to make this possible
+  on Windows (see incidents below for two real bugs this surfaced and fixed).
+  A clean production `npm run build` also passes. Pushed to
+  `claude/project-prompt-ramwlq` (force-pushed over the stale remote tip,
+  whose one extra commit was already merged into `master` as #7 — the
+  documented, expected reset pattern for this branch, not a data-loss risk).
 
 ### Decision: OCR model choice
 Considered `lightonai/LightOnOCR-2-1B` (a strong, modern VLM-based OCR
@@ -83,19 +91,43 @@ for. Revisit LightOnOCR only if the backend ever moves to a GPU-backed host.
   (`npm run dev` failed with `'next' is not recognized`) — plain `npm install`
   fixed it. `npm audit` reports 3 high-severity vulnerabilities, not yet
   triaged (new tech debt item below).
+- **Real bug: `office.py`'s LibreOffice profile flag was a malformed
+  `file://` URI on Windows** — built as `f"file://{profile_dir}"` where
+  `profile_dir` is a raw Windows path (`C:\Users\...`), producing
+  `file://C:\Users\...` (two slashes, backslashes). Windows then tries to
+  resolve `C:` as a network hostname, hanging `soffice` indefinitely (no
+  error, no timeout from LibreOffice itself — it just sits there consuming
+  ~225MB RAM forever). Confirmed by testing with the default profile (no
+  `-env:UserInstallation` override at all), which converted in 20s. Fixed
+  with `profile_dir.as_uri()` (Python's correct, cross-platform way to build
+  a `file://` URI from a path) — this was silently wrong on Linux too
+  (`file://` + POSIX path happens to parse correctly by luck since POSIX
+  paths start with `/`, giving three slashes total, but it was never
+  actually using the *correct* API for it).
+- **Real bug: `ocrmypdf==16.10.0` calls the now-renamed
+  `pikepdf.Pdf.check()` method**, which pip resolved to the newest
+  `pikepdf` (10.10.0, where it's `check_pdf_syntax()` instead) since
+  `ocrmypdf`'s own dependency metadata doesn't pin an upper bound. This
+  would break OCR PDF identically on the Render deploy, not just locally —
+  pinned `pikepdf==9.5.2` (last version with `.check()`) in
+  `requirements.txt`.
+- Separately on this Windows dev box (not a code bug, just a local-setup
+  gotcha worth remembering): scoop's `tesseract` and `tesseract-languages`
+  packages install to two different folders, and `tesseract-languages`
+  lacks the `configs`/`tessconfigs` directories Tesseract needs for
+  `hocr`/`txt` output formats — copying the four `.traineddata` files into
+  `tesseract`'s own `tessdata/` (alongside its `configs`/`tessconfigs`) and
+  pointing `TESSDATA_PREFIX` there was the fix. Not relevant to the Docker
+  deploy, whose `apt` packages install everything to one place correctly.
 
 ### Technical debt (new)
 9. **npm audit reports 3 high-severity vulnerabilities** in frontend
    dependencies — not triaged this session, should be checked with
    `npm audit fix` (or manually, if fix requires a breaking upgrade) before
    the next deploy.
-10. **OCR PDF has no local runtime verification** — `ocrmypdf`/Tesseract
-    aren't installed in this local dev environment (Windows, no system
-    Tesseract), so the route was only syntax-checked (`py_compile`) and
-    structurally verified via the frontend page rendering correctly against
-    a mocked/absent backend. It follows the exact same router pattern as
-    `compress.py`/`repair.py`; first real test should be a `curl` against a
-    scanned test PDF once deployed (or once Tesseract is installed locally).
+10. ~~OCR PDF has no local runtime verification~~ **Resolved this session**
+    — verified end-to-end with a real scan-like test PDF, producing an
+    actual searchable text layer (checked via `page.get_text()`).
 11. Carried over from Session 1: #2 (rate limiting), #3 (no automated test
     suite), #4 (client/server logic drift risk), #5 (`unlock-pdf` redundant
     exception ordering), #6 (in-memory zip on large splits). Carried over
@@ -104,21 +136,18 @@ for. Revisit LightOnOCR only if the backend ever moves to a GPU-backed host.
 
 ### Follow-up ideas (carried over + new)
 - Triage the 3 `npm audit` high-severity vulnerabilities.
-- Verify OCR PDF end-to-end on a real deploy (Render) or a machine with
-  Tesseract installed locally — this session could only verify it
-  structurally, not by actually OCR-ing a file.
 - Everything else carried over from Session 2 (drag-to-reorder pages,
   client-side PDF→JPG, Compare PDF, PDF/A, Phase 4 AI features, Edit PDF
   resize handles/undo-redo) is still open and unchanged.
 
 ### Tomorrow's first task
-**Triage the `npm audit` high-severity findings**, then **verify OCR PDF
-against a real scanned PDF** (either on the Render deploy once redeployed,
-or locally after installing `tesseract-ocr`/`qpdf`/`ghostscript` via a
-package manager) — this session shipped the code and confirmed it compiles
-and the UI renders, but never actually ran Tesseract against a file.
-Alternatively, if design feedback comes back from the owner's own visual
-check of the new "Friendly Workbench" system, start there instead.
+**Triage the `npm audit` high-severity findings**, then redeploy the Render
+backend (it needs the `office.py` URI fix, the `pikepdf==9.5.2` pin, and
+the new `ocr.py` router — none of that is live yet) and confirm OCR PDF and
+the office conversions still work against the real deploy, not just this
+local Windows box. Alternatively, if design feedback comes back from the
+owner's own visual check of the new "Friendly Workbench" system, start
+there instead.
 
 ---
 
