@@ -63,6 +63,14 @@ export function ProcessFlow({
           >
             <Loader2 className="animate-spin text-primary-text" size={28} />
             <p className="text-sm text-neutral-500">Processing your file…</p>
+            <div className="relative h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
+              <motion.div
+                className="absolute inset-y-0 w-1/3 rounded-full bg-primary"
+                initial={{ left: "-33%" }}
+                animate={{ left: "100%" }}
+                transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
           </motion.div>
         )}
 

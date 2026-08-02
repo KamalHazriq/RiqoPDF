@@ -10,8 +10,16 @@ export default function MergePdfPage() {
   const [files, setFiles] = useState<File[]>([]);
 
   return (
-    <ToolPageShell title="Merge PDF" description="Combine multiple PDFs into one document, in the order you add them.">
-      <Uploader accept="application/pdf" multiple files={files} onFilesChange={setFiles} label="Drag & drop PDFs, or click to upload" />
+    <ToolPageShell title="Merge PDF" description="Combine multiple PDFs into one document. Drag the list below to arrange the order.">
+      <Uploader
+        accept="application/pdf"
+        multiple
+        sortable
+        thumbnails
+        files={files}
+        onFilesChange={setFiles}
+        label="Drag & drop PDFs, or click to upload"
+      />
       <div className="mt-6">
         <ProcessFlow
           canRun={files.length >= 2}

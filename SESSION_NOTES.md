@@ -5,6 +5,142 @@ pick up next. Newest session first.
 
 ---
 
+## Session 4 — 2026-08-02 · Merge reorder, custom-size compress, progress bar, tidy-ups
+
+### What shipped
+- **Merge PDF: drag-to-reorder with thumbnails.** Compared against the live
+  iLovePDF site first — its "arrange" step is whole-file drag-and-drop with
+  an optional page-1 cover thumbnail, not page-level. Matched that exactly:
+  `Uploader` gained `sortable`/`thumbnails` props (`frontend/components/uploader.tsx`),
+  using `framer-motion`'s `Reorder` (already a dependency, no new package)
+  for the drag list and a new `frontend/lib/pdf-thumbnail.ts` (same
+  `pdfjs-dist` pattern the shipped Edit PDF feature already uses) for the
+  page-1 preview. No backend change needed — the merge engine already just
+  merges `files` in array order, so reordering the array is the whole fix.
+- **Compress PDF: custom target-size mode.** iLovePDF itself only has the
+  same 3 presets RiqoPDF already had (extreme/recommended/low) — no
+  competitor precedent for this, added anyway per explicit request.
+  `backend/app/routers/compress.py` gained `compress_to_target()`: a
+  9-step (dpi, jpeg-quality) ladder from best-quality to most-aggressive,
+  first PyMuPDF pass under the requested `target_size_kb` wins; if none
+  fit, returns the smallest achieved with `X-Target-Met: false` rather than
+  erroring. Verified against a real 2.2MB image-heavy test PDF: 300KB
+  target → 287KB actual; unreachable 1KB target → graceful `false` with
+  best-effort output, not a failure.
+- **Indeterminate progress bar, all 26 tools at once.** Added once in
+  `ProcessFlow`'s "processing" stage (a sliding bar via `framer-motion`),
+  so every tool page picked it up for free — matches what iLovePDF's own
+  compress screen shows (an indeterminate animation, not a real percentage;
+  a true percentage isn't obtainable from the current single-request
+  upload→process→download model without a bigger job-polling redesign).
+- **npm audit: 2 of 4 high-severity findings actually fixed.** `next`
+  itself had two real high-severity issues (DoS + SSRF in Server Actions,
+  GHSA-m99w-x7hq-7vfj / GHSA-89xv-2m56-2m9x) — patched via a safe non-breaking
+  bump (`15.5.20` → `15.5.22`, same major); a transitive `brace-expansion`
+  DoS in eslint tooling also patched. Left `postcss`/`sharp` alone: both are
+  bundled *inside* `next`'s own tree, not our build path — `sharp` is dead
+  code here (`images.unoptimized: true` disables Next's Image Optimization
+  entirely) and our actual Tailwind postcss (`@tailwindcss/postcss` →
+  `8.5.20`) is already past the vulnerable range. Fully clearing those two
+  would need a `next@16` major bump — deliberately not done unilaterally,
+  flagged instead.
+- **Fixed `unlock-pdf`'s inconsistent cleanup** (tech debt #5, carried since
+  Session 1): it deleted `job_dir` *before* raising the wrong-password
+  `HTTPException`, then had a no-op `except HTTPException: raise` — every
+  other router in this codebase (`organize.py` etc.) raises inline and lets
+  the `except HTTPException:` clause do cleanup uniformly. Now matches.
+  Verified with a real AES-256-encrypted test PDF: wrong password → clean
+  403 JSON body (not a 500), correct password → 200.
+- **Fixed `AnnotationView`'s narrowing workaround** (tech debt #7, carried
+  since Session 2): the sequential `if (ann.type === ...) return` chain
+  needed `ann.type === "image" ? ann.dataUrl : ""` because TypeScript
+  wasn't narrowing cleanly across a discriminant (`ShapeAnnotation.type`)
+  that's itself a union. Rewritten as a `switch (ann.type)` — narrows
+  cleanly, no workaround, `tsc` confirms it's exhaustive with no fallback
+  needed.
+- Pushed to `claude/project-prompt-ramwlq`, merged to `master` via PR,
+  redeployed both GitHub Pages and Render. All 26 backend routes re-verified
+  with curl post-fix (26/26 pass), full production build clean.
+
+### Incidents worth remembering
+- **This session's Browser-pane preview genuinely cannot run anything that
+  depends on `requestAnimationFrame`** — confirmed, not just suspected, via
+  four independent reproductions: a direct double-rAF await timed out; a
+  synchronous canvas `fillRect`+`toDataURL` worked instantly but `pdfjs`'s
+  *async* `page.render().promise` hung forever (pdf.js's progressive
+  render pipeline is rAF-scheduled internally); a synthetic
+  pointerdown/pointermove/pointerup sequence meant to trigger
+  `framer-motion`'s `Reorder` drag gesture hung the whole tool call; and
+  polling the DOM in a tight loop while an infinite-`repeat` `framer-motion`
+  `animate` was mounted also hung it. Single, non-looping interactions
+  (one click, one DOM read) are fine; anything that needs a paint/compositing
+  cycle to resolve is not verifiable here. This means: Merge PDF's
+  thumbnails and drag-reorder, and any tool's progress-bar animation, are
+  code-reviewed and pattern-matched against already-shipped working code,
+  but **not visually confirmed this session** — worth a real click-through
+  before fully trusting them.
+- **New tabs opened via the browser tool's `tabs_create` have a `0×0`
+  viewport** (`window.innerWidth/innerHeight` both `0`) until explicitly
+  resized — this silently breaks anything geometry-dependent (element
+  `getBoundingClientRect()`, drag-by-coordinate). The original/`seed` tab
+  keeps its real size. Use `seed` (or call `resize_window` on a new tab)
+  for anything that needs real layout.
+- **A stray, unrelated `package-lock.json` in the Windows user's home
+  directory** (`C:\Users\<user>\package-lock.json`, nothing to do with this
+  repo) made Next.js dev server guess the wrong workspace root, which
+  correlated with `ChunkLoadError`s for dynamically-imported chunks
+  (`pdfjs-dist`) that legitimately existed on disk (verified via direct
+  `curl`, HTTP 200) but that the client's webpack runtime couldn't resolve.
+  Fixed by pinning `outputFileTracingRoot: process.cwd()` in
+  `next.config.ts` — a real, permanent fix, not session-specific, since any
+  dev machine with a stray parent-directory lockfile would hit the same
+  thing.
+- The dev server also silently died once (port no longer listening, no
+  crash message surfaced) after a burst of Fast-Refresh rebuilds; a plain
+  restart recovered it. Cause undetermined — possibly related to the above
+  workspace-root confusion.
+- `read_console_messages` on a tab that's been alive across many
+  `navigate()` calls in one long session can return **stale, previously-seen
+  errors** mixed in with (or instead of) current ones — don't trust a
+  console error's presence/absence as proof about the *latest* action
+  without cross-checking via a fresh tab or another signal (network log,
+  DOM state).
+
+### Technical debt (updates)
+- ~~#5 `unlock-pdf` redundant exception ordering~~ **Fixed this session.**
+- ~~#7 `AnnotationView` discriminated-union narrowing workaround~~ **Fixed
+  this session.**
+- New: 2 of the original 4 `npm audit` high-severity findings remain
+  (`postcss`, `sharp`, both only reachable via `next`'s own internal
+  dependency tree, not this app's actual code paths) — would need a
+  `next@16` major-version bump to fully clear. Worth doing eventually, not
+  urgent given the low real-world reachability here.
+- Carried over, still open: #2 (rate limiting), #3 (no automated test
+  suite), #4 (client/server logic drift risk), #6 (in-memory zip on large
+  client-side splits — inherent to browser-only processing, not a quick
+  fix), #8 (Edit PDF resize handles / undo-redo).
+
+### Follow-up ideas (carried over + new)
+- **Do a real visual pass on Merge PDF** (drag-reorder + thumbnails) and
+  the progress bar in an actual browser, given this session's harness
+  couldn't render/verify them — see Incidents above.
+- Consider a `next@16` major upgrade to fully clear the remaining 2 npm
+  audit findings — needs its own testing pass across all 25 tool pages
+  given it's a breaking-change-eligible major bump.
+- Everything else carried over from Sessions 2–3 (Compare PDF, PDF/A,
+  Phase 4 AI features, Edit PDF resize handles/undo-redo) is still open
+  and unchanged.
+
+### Tomorrow's first task
+**Open the live site and actually drag-reorder two files on Merge PDF, and
+watch the progress bar animate on any tool** — this session shipped and
+backend/type-verified everything but could not visually confirm the two
+animation/canvas-dependent pieces due to a confirmed harness limitation
+(no `requestAnimationFrame`). If both look right, move on to the `next@16`
+upgrade or Compare PDF/PDF-A.
+
+---
+
 ## Session 3 — 2026-07-25 · Local clone recovery, design system, OCR PDF
 
 ### What shipped

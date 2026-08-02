@@ -4,7 +4,9 @@ A free, privacy-first PDF toolkit — "One place for every PDF task." See
 `PROJECT_PROMPT.md` for the full product spec and `ARCHITECTURE.md` for the
 system design. This repo currently implements:
 
-- **Phase 1:** Merge, Split, Compress, Rotate, Organize (delete pages),
+- **Phase 1:** Merge (drag to reorder files before combining), Split,
+  Compress (3 presets, plus a custom target-size mode that iteratively
+  compresses until the file fits), Rotate, Organize (delete pages),
   JPG→PDF, and PDF→JPG.
 - **Phase 2:** Word/Excel/PowerPoint→PDF, PDF→Word/Excel/PowerPoint,
   PDF→HTML, PDF→Markdown.
