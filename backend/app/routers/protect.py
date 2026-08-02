@@ -52,12 +52,12 @@ async def unlock_pdf(file: UploadFile = File(...), password: str = Form(...)):
         doc = fitz.open(str(src))
         if doc.needs_pass and not doc.authenticate(password):
             doc.close()
-            delete_job_dir(job_dir)
             raise HTTPException(403, "Incorrect password")
         out_path = job_dir / "unlocked.pdf"
         doc.save(out_path, encryption=fitz.PDF_ENCRYPT_NONE)
         doc.close()
     except HTTPException:
+        delete_job_dir(job_dir)
         raise
     except Exception as exc:
         delete_job_dir(job_dir)

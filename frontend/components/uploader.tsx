@@ -1,8 +1,10 @@
 "use client";
 
-import { useRef, useState, type DragEvent } from "react";
-import { UploadCloud, X } from "lucide-react";
+import { useEffect, useRef, useState, type DragEvent } from "react";
+import { Reorder } from "framer-motion";
+import { FileText, GripVertical, UploadCloud, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getPdfThumbnail } from "@/lib/pdf-thumbnail";
 
 interface UploaderProps {
   accept: string;
@@ -10,9 +12,46 @@ interface UploaderProps {
   files: File[];
   onFilesChange: (files: File[]) => void;
   label?: string;
+  /** Let the user drag list items to reorder them (e.g. Merge PDF's file order). */
+  sortable?: boolean;
+  /** Render a page-1 thumbnail per PDF instead of just the filename. */
+  thumbnails?: boolean;
 }
 
-export function Uploader({ accept, multiple = false, files, onFilesChange, label }: UploaderProps) {
+function FileThumbnail({ file }: { file: File }) {
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getPdfThumbnail(file).then((result) => {
+      if (!cancelled) setUrl(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [file]);
+
+  return (
+    <div className="flex h-10 w-8 shrink-0 items-center justify-center overflow-hidden rounded border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
+      {url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={url} alt="" className="h-full w-full object-cover" />
+      ) : (
+        <FileText size={14} className="text-neutral-400" />
+      )}
+    </div>
+  );
+}
+
+export function Uploader({
+  accept,
+  multiple = false,
+  files,
+  onFilesChange,
+  label,
+  sortable = false,
+  thumbnails = false,
+}: UploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
 
@@ -31,6 +70,9 @@ export function Uploader({ accept, multiple = false, files, onFilesChange, label
   function removeFile(index: number) {
     onFilesChange(files.filter((_, i) => i !== index));
   }
+
+  const itemClass =
+    "flex items-center gap-2 rounded-lg border border-neutral-200 bg-surface px-3 py-2 text-sm dark:border-neutral-800";
 
   return (
     <div className="flex flex-col gap-3">
@@ -63,18 +105,42 @@ export function Uploader({ accept, multiple = false, files, onFilesChange, label
         />
       </div>
 
-      {files.length > 0 && (
-        <ul className="flex flex-col gap-2">
+      {files.length > 0 && sortable && (
+        <Reorder.Group
+          as="ul"
+          axis="y"
+          values={files}
+          onReorder={onFilesChange}
+          className="flex flex-col gap-2"
+        >
           {files.map((file, i) => (
-            <li
-              key={`${file.name}-${i}`}
-              className="flex items-center justify-between rounded-lg border border-neutral-200 px-3 py-2 text-sm dark:border-neutral-800"
-            >
+            <Reorder.Item as="li" key={`${file.name}-${file.size}-${i}`} value={file} className={cn(itemClass, "cursor-grab active:cursor-grabbing")}>
+              <GripVertical size={14} className="shrink-0 text-neutral-300 dark:text-neutral-600" />
+              {thumbnails && <FileThumbnail file={file} />}
               <span className="truncate">{file.name}</span>
               <button
                 type="button"
                 onClick={() => removeFile(i)}
-                className="text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+                className="ml-auto shrink-0 text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+                aria-label={`Remove ${file.name}`}
+              >
+                <X size={16} />
+              </button>
+            </Reorder.Item>
+          ))}
+        </Reorder.Group>
+      )}
+
+      {files.length > 0 && !sortable && (
+        <ul className="flex flex-col gap-2">
+          {files.map((file, i) => (
+            <li key={`${file.name}-${i}`} className={itemClass}>
+              {thumbnails && <FileThumbnail file={file} />}
+              <span className="truncate">{file.name}</span>
+              <button
+                type="button"
+                onClick={() => removeFile(i)}
+                className="ml-auto shrink-0 text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                 aria-label={`Remove ${file.name}`}
               >
                 <X size={16} />

@@ -400,26 +400,26 @@ function AnnotationView({
     outline: selected ? "2px solid #2563eb" : "none",
   };
 
-  if (ann.type === "text") {
-    return (
-      <div
-        onPointerDown={onPointerDown}
-        style={{ ...style, color: ann.color, fontSize: `${ann.fontSize * 1.1}px`, lineHeight: 1.2, overflow: "hidden" }}
-      >
-        {ann.text}
-      </div>
-    );
+  switch (ann.type) {
+    case "text":
+      return (
+        <div
+          onPointerDown={onPointerDown}
+          style={{ ...style, color: ann.color, fontSize: `${ann.fontSize * 1.1}px`, lineHeight: 1.2, overflow: "hidden" }}
+        >
+          {ann.text}
+        </div>
+      );
+    case "highlight":
+      return <div onPointerDown={onPointerDown} style={{ ...style, backgroundColor: ann.color, opacity: 0.4 }} />;
+    case "rectangle":
+      return <div onPointerDown={onPointerDown} style={{ ...style, border: `2px solid ${ann.color}` }} />;
+    case "image":
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img onPointerDown={onPointerDown} src={ann.dataUrl} alt="" style={style} />
+      );
   }
-  if (ann.type === "highlight") {
-    return <div onPointerDown={onPointerDown} style={{ ...style, backgroundColor: ann.color, opacity: 0.4 }} />;
-  }
-  if (ann.type === "rectangle") {
-    return <div onPointerDown={onPointerDown} style={{ ...style, border: `2px solid ${ann.color}` }} />;
-  }
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img onPointerDown={onPointerDown} src={ann.type === "image" ? ann.dataUrl : ""} alt="" style={style} />
-  );
 }
 
 function AnnotationProperties({
