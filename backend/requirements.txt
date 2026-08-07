@@ -12,3 +12,4 @@ ocrmypdf==16.10.0
 # check_pdf_syntax() in a later release (unpinned by ocrmypdf itself) —
 # pin to the last version that still has .check().
 pikepdf==9.5.2
+slowapi==0.1.9

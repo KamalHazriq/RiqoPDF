@@ -1,10 +1,13 @@
 import asyncio
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.util import get_remote_address
 
-from .config import CORS_ORIGINS
+from .config import CORS_ORIGINS, RATE_LIMIT
 from .routers import (
     compress,
     crop_pages,
@@ -47,6 +50,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Per-IP request budget on every route by default; /api/health is exempted
+# below since Render's own uptime pings shouldn't be able to trip it.
+# SlowAPIMiddleware answers over-limit requests directly at the ASGI level
+# (before FastAPI's own exception-handler chain runs), so a
+# @app.exception_handler(RateLimitExceeded) here would never fire — its
+# {"error": "..."} response body is handled by the frontend directly
+# instead (see lib/api.ts).
+limiter = Limiter(key_func=get_remote_address, default_limits=[RATE_LIMIT])
+app.state.limiter = limiter
+app.add_middleware(SlowAPIMiddleware)
+
 app.include_router(merge.router, prefix="/api/tools", tags=["merge"])
 app.include_router(split.router, prefix="/api/tools", tags=["split"])
 app.include_router(compress.router, prefix="/api/tools", tags=["compress"])
@@ -71,5 +85,6 @@ app.include_router(ocr.router, prefix="/api/tools", tags=["ocr"])
 
 
 @app.get("/api/health")
-def health():
+@limiter.exempt
+def health(request: Request):
     return {"status": "ok"}

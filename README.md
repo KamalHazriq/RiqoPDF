@@ -24,7 +24,9 @@ one picture per slide.
 
 No database, no accounts — every request is upload → process → download,
 with uploaded files deleted immediately after processing (and swept after
-10 minutes as a safety net either way).
+10 minutes as a safety net either way). Every route is rate-limited per IP
+(`RATE_LIMIT` env var, defaults to `30/minute`) — `/api/health` is exempt
+so uptime monitors don't trip it.
 
 ## Local development
 
@@ -45,6 +47,19 @@ as `soffice`; the reverse conversions (PDF→Word/Excel/PowerPoint,
 PDF→Markdown) don't need it. OCR PDF requires `tesseract-ocr` (plus the
 `eng`/`msa`/`chi-sim`/`jpn` language packs) and `qpdf` on PATH — see
 `backend/Dockerfile` for exact package names.
+
+**Tests** (backend):
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+pytest tests/ -v
+```
+
+Exercises all 25 tool routes against real generated fixture files (PDFs,
+docx/xlsx/pptx, images) via FastAPI's in-process `TestClient` — no server
+needs to be running. Requires the same system binaries as local dev
+(LibreOffice, Ghostscript, Tesseract, qpdf) for full coverage.
 
 See `SESSION_NOTES.md` for per-session decisions, technical debt, and
 next steps.

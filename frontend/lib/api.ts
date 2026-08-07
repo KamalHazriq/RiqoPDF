@@ -27,9 +27,13 @@ export async function callTool(path: string, formData: FormData): Promise<Respon
 
   if (!res.ok) {
     let message = `Request failed (${res.status})`;
+    if (res.status === 429) message = "You're sending requests a bit fast — wait a minute and try again.";
     try {
       const body = await res.json();
-      message = body.detail ?? message;
+      // FastAPI's own errors use "detail"; the rate limiter's ASGI
+      // middleware responds before FastAPI's handlers run, so its 429s use
+      // "error" instead — see backend/app/main.py.
+      message = body.detail ?? body.error ?? message;
     } catch {
       // ignore — non-JSON error body
     }

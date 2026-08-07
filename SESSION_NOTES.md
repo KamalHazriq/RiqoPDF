@@ -5,6 +5,98 @@ pick up next. Newest session first.
 
 ---
 
+## Session 5 — 2026-08-02 · Rate limiting, backend test suite (autonomous pass)
+
+Run without interactive check-ins per explicit instruction ("improve what
+needs to be improved without my supervision") — scoped deliberately to
+safe, well-tested, additive changes; nothing high-blast-radius (no
+framework major-version bumps, no unverified interactive UI work) was
+attempted without a human in the loop.
+
+### What shipped
+- **Rate limiting** (tech debt #2, open since Session 1): every route now
+  has a per-IP budget via `slowapi` (`RATE_LIMIT` env var, defaults to
+  `30/minute`), applied once as ASGI middleware with `default_limits` —
+  no per-route decorators needed, so none of the 25 router files changed.
+  `/api/health` is explicitly exempt so Render's own uptime pings can't
+  trip it. Verified live: dropped the limit to `3/minute`, fired 5
+  requests, got 200/200/200/429/429; health check stayed exempt even after
+  the limit was exhausted.
+- **Found and fixed a bug in my own rate-limiter integration before it
+  shipped**: `SlowAPIMiddleware` answers over-limit requests directly at
+  the ASGI level, *before* FastAPI's own exception-handler chain ever
+  runs — so a `@app.exception_handler(RateLimitExceeded)` registered the
+  normal FastAPI way is silently dead code for middleware-triggered limits
+  (only relevant for the per-route `@limiter.limit(...)` decorator style,
+  which this project doesn't use). Removed the dead handler; instead
+  `frontend/lib/api.ts` now reads `body.error` as a fallback alongside
+  `body.detail`, since slowapi's middleware responds with a different
+  JSON shape than FastAPI's own `HTTPException`s do.
+- **Backend pytest suite** (tech debt #3, open since Session 1):
+  `backend/tests/` — one test per tool route (35 tests total) against real
+  generated fixture files (PDFs, docx/xlsx/pptx, images), using FastAPI's
+  in-process `TestClient`, no server needed. Covers the happy path for
+  every route plus the validation/error paths worth locking in (wrong
+  unlock password → 403, password-too-short → 400, custom-compress without
+  a target → 400, redact with no match → 404, non-PDF upload → 400, OCR
+  with an invalid language → 400). `backend/requirements-dev.txt` adds
+  `pytest`+`httpx` without bloating the production Docker image (test deps
+  are a separate file, never installed by `Dockerfile`). All 35 pass.
+- **Caught and fixed a real interaction bug between the two new features
+  before it caused flaky tests**: the pytest suite fires 35 requests
+  through one shared `TestClient`, which slowapi sees as a single "IP" —
+  without intervention this would have self-rate-limited the test suite
+  into failures under the new 30/minute default. Fixed in
+  `tests/conftest.py` by setting `RATE_LIMIT` to a very high value via
+  `os.environ.setdefault(...)` *before* `app.main` (and therefore
+  `app.config`) is imported, since the limiter reads it once at import time.
+- Full regression after both changes: 26/26 backend routes still pass via
+  the existing curl script, 35/35 pytest tests pass, `tsc`+production
+  build both clean. Pushed, merged to `master`, both GitHub Pages and
+  Render redeployed and spot-verified live.
+
+### Deliberately not attempted (would need a human decision)
+- **Edit PDF resize handles** (tech debt #8) — a real, previously-scoped
+  gap, but implementing it meant more `onPointerDown/Move/Up`-driven drag
+  interaction code, and this session (see Session 4's incidents) already
+  hit hard limits verifying *any* drag/animation-dependent UI in this
+  environment. Shipping unverified interactive code "without supervision"
+  felt like the wrong trade — skipped rather than guessed at.
+- **`next@16` major upgrade** to clear the last 2 npm-audit findings
+  (flagged in Session 4, still open) — a breaking-change-eligible major
+  bump across all 25 tool pages is exactly the kind of high-blast-radius
+  change the "without supervision" framing shouldn't extend to.
+
+### Technical debt (updates)
+- ~~#2 no rate limiting~~ **Fixed this session.**
+- ~~#3 no automated test suite~~ **Fixed this session** (backend only;
+  frontend has none yet — see follow-up ideas).
+- Carried over, still open: #4 (client/server logic drift risk — the 9
+  browser-side engines have no shared fixtures against the backend routes
+  they mirror; the new pytest suite doesn't cover this either, since it
+  only exercises the backend), #6 (in-memory zip on large client-side
+  splits), #8 (Edit PDF resize handles/undo-redo, see above), the 2
+  remaining `npm audit` findings (see above).
+
+### Follow-up ideas (carried over + new)
+- A frontend test suite (or at least shared fixtures the client-side
+  engines and backend routes both run against) would close tech debt #4 —
+  right now only the backend has automated coverage.
+- Wire the new pytest suite into CI (no GitHub Actions workflow runs it
+  yet) — needs LibreOffice/Ghostscript/Tesseract/qpdf in the CI image,
+  which is its own scoped piece of work, not done this session.
+- Everything else carried over from Sessions 2–4 (Merge/progress-bar visual
+  confirmation, Compare PDF, PDF/A, Phase 4 AI features, Edit PDF resize
+  handles/undo-redo, `next@16`) is still open and unchanged.
+
+### Tomorrow's first task
+**Visually confirm Session 4's Merge PDF drag-reorder/thumbnails and the
+progress bar** (still unverified — see Session 4's incidents), then decide
+on Edit PDF resize handles and the `next@16` upgrade, both intentionally
+left for a supervised session.
+
+---
+
 ## Session 4 — 2026-08-02 · Merge reorder, custom-size compress, progress bar, tidy-ups
 
 ### What shipped
