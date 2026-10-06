@@ -11,5 +11,5 @@ ocrmypdf==16.10.0
 # ocrmypdf 16.10.0 calls pikepdf.Pdf.check(), which pikepdf renamed to
 # check_pdf_syntax() in a later release (unpinned by ocrmypdf itself) —
 # pin to the last version that still has .check().
-pikepdf==9.5.2
+pikepdf==10.16.0
 limits==5.8.0
