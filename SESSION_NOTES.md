@@ -5,6 +5,104 @@ pick up next. Newest session first.
 
 ---
 
+## Session 6 — 2026-10-06 · Dependency/security sweep, rate-limiter rewrite, CI
+
+Open-ended "scan, update, improve anything" pass. Started with a health scan
+(audit, outdated, tests, lint, build) rather than guessing at features.
+
+### What shipped
+- **Frontend: critical `next` RCE advisories closed.** `next` 15.5.22 →
+  15.5.27 (two critical advisories fixed in 15.5.24: unauthenticated RCE on
+  Windows-hosted servers and via the Image Optimization API). Plus safe
+  minor/patch bumps (react/react-dom 19.3, framer-motion, lucide-react,
+  jszip, tailwind-merge, `@types/*`) and `npm audit fix` for the transitive
+  ones. 14 findings (1 critical) → 7 (0 critical).
+- **Backend: 4 packages with 144 combined advisories upgraded.** `pypdf`
+  5.1 → 6.19 (85), `Pillow` 11.1 → 12.3 (33), `starlette` 0.41 → 1.7 via
+  `fastapi` 0.115 → 0.142 (14), `python-multipart` 0.0.20 → 0.0.32 (12);
+  `uvicorn` bumped alongside. `pip-audit` on `requirements.txt` is now
+  clean. These all sit on the upload-parsing path of a public service.
+  Proven from a clean venv: `pip install -r requirements-dev.txt`,
+  `pip check` clean, 38/38 tests pass.
+- **Rate limiter rewritten (`backend/app/ratelimit.py`) — the upgrade broke
+  the old one silently.** `slowapi`'s middleware finds the matched route by
+  walking `app.routes`; FastAPI 0.142 wraps included routers in opaque
+  `_IncludedRouter` objects, so it found nothing and **stopped limiting
+  entirely**. All 35 existing tests still passed because the suite
+  deliberately disables the limiter. Caught only by probing the real app
+  with `RATE_LIMIT=3/minute` on old vs new stack (`422,422,422,429,429` vs
+  never-429). Replaced with a ~50-line pure-ASGI middleware on `limits`
+  (slowapi's own engine; no route knowledge needed), dropped `slowapi`.
+- **Two latent bugs fixed in the process:** (1) the limiter used to be the
+  *outermost* middleware, so its 429s left without CORS headers and a
+  browser would show them as "backend unreachable" instead of the friendly
+  message — now CORS wraps the limiter; (2) CORS preflights (`OPTIONS`) no
+  longer spend the budget.
+- **3 new tests** for exactly those behaviours (limit enforced, `/health`
+  exempt, 429 carries message + `Retry-After` + CORS header, preflight not
+  counted), on a tiny dedicated app so the shared client's disabled limiter
+  can't hide a regression again.
+- **Client IP behind the host's proxy.** `backend/Dockerfile` now runs
+  uvicorn with `--proxy-headers --forwarded-allow-ips='*'`. Uvicorn only
+  trusts `X-Forwarded-For` from loopback by default, and Render/Railway's
+  load balancer isn't loopback — so (inferred, not observed) every visitor
+  was sharing one 30/min bucket. Verified the mechanism locally:
+  `X-Forwarded-For: 1.1.1.1` is limited on its 3rd request while `2.2.2.2`
+  is independent. Only safe because the container isn't directly reachable;
+  commented in the Dockerfile.
+- **CI (`.github/workflows/ci.yml`)** — lint + `tsc` + the exact Pages
+  production build + `npm audit --omit=dev --audit-level=critical` for the
+  frontend; real system deps (LibreOffice, Ghostscript, Tesseract, qpdf) +
+  pytest + `pip-audit` on Python 3.12 (matches the Dockerfile) for the
+  backend. Runs on PRs. Closes the "wire pytest into CI" follow-up.
+- **Dependabot (`.github/dependabot.yml`)** — weekly grouped minor/patch PRs
+  for npm and pip, monthly for Actions. The 85-advisory `pypdf` gap
+  accumulated because nothing was watching.
+- Browser smoke test after the bumps: homepage (26 tool cards), Merge
+  (client-side, real download), Edit PDF (pdf.js renders text to canvas),
+  zero console errors.
+
+### Incidents worth remembering
+- **A green test suite proved nothing about the rate limiter**, because the
+  suite turns the limiter off to avoid self-throttling. Any safety feature
+  that tests must disable needs its *own* test that exercises it enabled.
+- **Sandbox again lacked system binaries** (`libreoffice-writer` etc.,
+  Ghostscript, Tesseract, qpdf); `apt-get install` worked through the proxy.
+  Without them `test_word_to_pdf` fails with a 400 that looks like a code
+  bug — it isn't. CI installs the same set.
+- `pip-audit -r requirements.txt` audits the *pinned* versions, not what's
+  installed — it kept reporting the old versions until `requirements.txt`
+  itself was edited.
+
+### Not verified / needs a human
+- **Render live behaviour.** Outbound to `onrender.com` is blocked from this
+  sandbox; the new backend deps and the proxy-header change are verified
+  locally and in a clean venv, not on the deployed service. Check
+  `/api/health` and one real tool after the deploy, and confirm in Render's
+  logs that client IPs differ.
+- **Python 3.12 / Docker image** — tested on 3.11 locally; CI covers 3.12.
+- **The first CI run** can only be observed on GitHub.
+
+### Technical debt (updates)
+- Remaining frontend `npm audit`: 7 findings, none fixable without a major.
+  5 are `eslint-config-next`'s dev-only glob chain (npm's suggested "fix" is
+  a downgrade to v14 — ignore); 2 (`next` moderate, `postcss` bundled inside
+  `next`) need `next@16`. Production audit gate is set to `critical` for this
+  reason; tighten it after the `next@16` upgrade.
+- Newly noted: `framer-motion`/`pdfjs-dist`/`typescript`/`eslint` have
+  newer majors (14 / 6 / 7 / 10) — all deliberately left; `pdfjs-dist@6`
+  already proved broken in this app (Session 2).
+- Still open: #4 client/server logic drift, #6 in-memory zip on huge
+  splits, #8 Edit PDF resize handles/undo-redo.
+
+### Tomorrow's first task
+**Confirm the Render redeploy is healthy** (health check, one real tool,
+distinct client IPs in logs), then take on the `next@16` upgrade in a
+supervised session — it clears the remaining 2 real audit findings and lets
+CI's audit gate tighten.
+
+---
+
 ## Session 5 — 2026-08-02 · Rate limiting, backend test suite (autonomous pass)
 
 Run without interactive check-ins per explicit instruction ("improve what

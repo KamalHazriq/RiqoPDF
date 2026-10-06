@@ -1,13 +1,11 @@
 import asyncio
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter
-from slowapi.middleware import SlowAPIMiddleware
-from slowapi.util import get_remote_address
 
 from .config import CORS_ORIGINS, RATE_LIMIT
+from .ratelimit import RateLimitMiddleware
 from .routers import (
     compress,
     crop_pages,
@@ -43,23 +41,19 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="RiqoPDF API", lifespan=lifespan)
 
+# Middleware order matters: Starlette makes the LAST one added the outermost.
+# Rate limiting is added first (inner) and CORS last (outer), so a 429 still
+# passes back through CORS and carries Access-Control-Allow-Origin — without
+# that, a browser reports an over-limit response as a generic network
+# failure instead of letting the frontend read the "rate limit" message.
+# /api/health is exempt so Render's own uptime pings can't trip the limiter.
+app.add_middleware(RateLimitMiddleware, limit=RATE_LIMIT, exempt_paths=("/api/health",))
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Per-IP request budget on every route by default; /api/health is exempted
-# below since Render's own uptime pings shouldn't be able to trip it.
-# SlowAPIMiddleware answers over-limit requests directly at the ASGI level
-# (before FastAPI's own exception-handler chain runs), so a
-# @app.exception_handler(RateLimitExceeded) here would never fire — its
-# {"error": "..."} response body is handled by the frontend directly
-# instead (see lib/api.ts).
-limiter = Limiter(key_func=get_remote_address, default_limits=[RATE_LIMIT])
-app.state.limiter = limiter
-app.add_middleware(SlowAPIMiddleware)
 
 app.include_router(merge.router, prefix="/api/tools", tags=["merge"])
 app.include_router(split.router, prefix="/api/tools", tags=["split"])
@@ -85,6 +79,5 @@ app.include_router(ocr.router, prefix="/api/tools", tags=["ocr"])
 
 
 @app.get("/api/health")
-@limiter.exempt
-def health(request: Request):
+def health():
     return {"status": "ok"}

@@ -26,7 +26,8 @@ No database, no accounts — every request is upload → process → download,
 with uploaded files deleted immediately after processing (and swept after
 10 minutes as a safety net either way). Every route is rate-limited per IP
 (`RATE_LIMIT` env var, defaults to `30/minute`) — `/api/health` is exempt
-so uptime monitors don't trip it.
+so uptime monitors don't trip it. Behind a reverse proxy (Render, Railway) the
+client IP is taken from `X-Forwarded-For` — see the note in `backend/Dockerfile`.
 
 ## Local development
 
@@ -60,6 +61,10 @@ Exercises all 25 tool routes against real generated fixture files (PDFs,
 docx/xlsx/pptx, images) via FastAPI's in-process `TestClient` — no server
 needs to be running. Requires the same system binaries as local dev
 (LibreOffice, Ghostscript, Tesseract, qpdf) for full coverage.
+
+CI (`.github/workflows/ci.yml`) runs these plus lint, type-check, the production
+build, and dependency audits on every pull request; Dependabot opens weekly
+update PRs.
 
 See `SESSION_NOTES.md` for per-session decisions, technical debt, and
 next steps.

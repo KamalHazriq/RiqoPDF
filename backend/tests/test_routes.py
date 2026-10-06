@@ -234,3 +234,52 @@ def test_rejects_non_pdf_upload(client, sample_jpg):
     with open(sample_jpg, "rb") as f:
         res = client.post("/api/tools/rotate-pdf", files={"file": f})
     assert res.status_code == 400
+
+
+# ---- rate limiting (uses its own tiny app: the shared client runs with the
+# limit effectively disabled, which is exactly how a silently-broken limiter
+# once slipped past this suite) ----
+
+def _limited_client(limit="3/minute"):
+    from fastapi import FastAPI
+    from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.testclient import TestClient
+    from app.ratelimit import RateLimitMiddleware
+
+    app = FastAPI()
+    app.add_middleware(RateLimitMiddleware, limit=limit, exempt_paths=("/health",))
+    app.add_middleware(CORSMiddleware, allow_origins=["https://example.com"], allow_methods=["*"], allow_headers=["*"])
+
+    @app.get("/work")
+    def work():
+        return {"ok": True}
+
+    @app.get("/health")
+    def health():
+        return {"status": "ok"}
+
+    return TestClient(app)
+
+
+def test_rate_limit_blocks_after_budget_and_exempts_health():
+    c = _limited_client()
+    assert [c.get("/work").status_code for _ in range(5)] == [200, 200, 200, 429, 429]
+    assert c.get("/health").status_code == 200  # exempt even once exhausted
+
+
+def test_rate_limit_429_has_message_retry_after_and_cors_headers():
+    c = _limited_client("1/minute")
+    c.get("/work")
+    res = c.get("/work", headers={"Origin": "https://example.com"})
+    assert res.status_code == 429
+    assert "Rate limit exceeded" in res.json()["error"]
+    assert int(res.headers["retry-after"]) >= 1
+    # Without this a browser surfaces the 429 as an opaque network error.
+    assert res.headers["access-control-allow-origin"] == "https://example.com"
+
+
+def test_rate_limit_ignores_cors_preflight():
+    c = _limited_client("1/minute")
+    for _ in range(3):
+        assert c.options("/work", headers={"Origin": "https://example.com", "Access-Control-Request-Method": "GET"}).status_code == 200
+    assert c.get("/work").status_code == 200
