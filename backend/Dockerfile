@@ -23,4 +23,9 @@ COPY app ./app
 EXPOSE 8000
 # Render/Railway inject $PORT and expect the app to bind to it; default to
 # 8000 for docker-compose / local `docker run` where it isn't set.
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# --forwarded-allow-ips="*": on Render/Railway the platform's load balancer is
+# the only way in and sits at a non-loopback address, so uvicorn must trust its
+# X-Forwarded-For header or every visitor looks like the same client IP and
+# shares ONE rate-limit bucket. Only safe because the container isn't reachable
+# directly — don't expose this port publicly without such a proxy in front.
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*'"]
