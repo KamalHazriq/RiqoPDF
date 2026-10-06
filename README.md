@@ -57,14 +57,14 @@ pip install -r requirements-dev.txt
 pytest tests/ -v
 ```
 
-CI (`.github/workflows/ci.yml`) runs these plus lint, type-check, the production
-build, and dependency audits on every pull request; Dependabot opens weekly
-update PRs.
-
 Exercises all 25 tool routes against real generated fixture files (PDFs,
 docx/xlsx/pptx, images) via FastAPI's in-process `TestClient` — no server
 needs to be running. Requires the same system binaries as local dev
 (LibreOffice, Ghostscript, Tesseract, qpdf) for full coverage.
+
+CI (`.github/workflows/ci.yml`) runs these plus lint, type-check, the production
+build, and dependency audits on every pull request; Dependabot opens weekly
+update PRs.
 
 See `SESSION_NOTES.md` for per-session decisions, technical debt, and
 next steps.
